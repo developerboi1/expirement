@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMate - AI-Powered Career Guidance</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#25F4DF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MindMate">
+    <meta name="msapplication-TileColor" content="#25F4DF">
+    <meta name="msapplication-config" content="browserconfig.xml">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="AI-powered career guidance platform for personalized assessments, learning resources, and community networking">
+    <meta name="keywords" content="career guidance, AI mentor, career assessment, professional development, learning resources">
+    <meta name="author" content="MindMate">
+    <link rel="canonical" href="https://mindmate.app/">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="MindMate - AI-Powered Career Guidance">
+    <meta property="og:description" content="Discover your perfect career with AI-powered assessments, personalized learning paths, and community support">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mindmate.app">
+    <meta property="og:site_name" content="MindMate">
+    <meta property="og:image" content="/og-image.svg">
+    <meta property="og:image:alt" content="MindMate - AI Career Guidance">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MindMate - AI-Powered Career Guidance">
+    <meta name="twitter:description" content="Discover your perfect career with AI-powered assessments and personalized guidance">
+    <meta name="twitter:image" content="/og-image.svg">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="script.js" as="script">
+    <link rel="preload" href="auth.js" as="script">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+</head>
+<body>
+    <!-- Main Content -->
+    <div id="main-content" class="main-content" role="main">
+        <!-- Header -->
+        <header class="header" role="banner">
+            <div class="container">
+                <nav class="nav" role="navigation" aria-label="Primary">
+                    <div class="logo">🧠 MindMate</div>
+                    <ul class="nav-links">
+                        <li><a href="?section=hero" data-action="navigate" data-section="hero">Home</a></li>
+                        <li><a href="?section=quiz-section" data-action="start-quiz">Assessment</a></li>
+                        <li><a href="?section=chat-section" data-action="navigate" data-section="chat-section">AI Mentor</a></li>
+                        <li><a href="?section=roadmap-section" data-action="navigate" data-section="roadmap-section">Careers</a></li>
+                        <li><a href="?section=learning-section" data-action="navigate" data-section="learning-section">Learning</a></li>
+                        <li><a href="?section=community-section" data-action="navigate" data-section="community-section">Community</a></li>
+                        <li><a href="?section=analytics-section" data-action="navigate" data-section="analytics-section">Analytics</a></li>
+                    </ul>
+                    <button class="nav-toggle" data-action="toggle-mobile-menu" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section id="hero" class="hero active">
+            <div class="container">
+                <div class="hero-banner">
+                    <div class="hero-content">
+                        <h1>Discover Your <span class="highlight">Perfect Career</span> 🇮🇳</h1>
+                        <p>Get personalized career guidance, take assessments, and chat with an AI mentor to find your ideal career path in the booming tech ecosystem.</p>
+                        <div class="hero-buttons">
+                            <button class="btn btn-primary" data-action="start-quiz">Start Assessment</button>
+                            <button class="btn btn-secondary" data-action="navigate" data-section="chat-section">Chat with AI</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">95%</div>
+                        <div class="stat-label">Accuracy Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Career Paths</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">AI Support</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Why Choose MindMate? 🇮🇳</h2>
+                <p>Our AI-powered platform provides comprehensive career guidance with market insights and career opportunities.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3>Personalized Assessment</h3>
+                        <p>Take our comprehensive career assessment to discover your strengths and interests.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>AI Career Mentor</h3>
+                        <p>Chat with our advanced AI mentor for personalized career advice and guidance.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🗺️</div>
+                        <h3>Career Roadmaps</h3>
+                        <p>Get detailed step-by-step roadmaps for your chosen career path.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🇮🇳</div>
+                        <h3>Market Intelligence</h3>
+                        <p>Get insights into booming tech ecosystems, startup opportunities, and salary trends.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz-section" class="quiz-section">
+            <div class="container">
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <h2>Career Assessment</h2>
+                        <p>Answer these questions to discover your ideal career path</p>
+                        <div class="quiz-progress">
+                            <span>Question <span id="current-question">1</span> of <span id="total-questions">4</span></span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="quiz-content"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chat Section -->
+        <section id="chat-section" class="chat-section">
+            <div class="container">
+                <div class="chat-container">
+                    <h2><i class="fas fa-robot"></i> AI Career Mentor</h2>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message ai">
+                            <strong>AI Mentor:</strong> Hello! I'm your AI career mentor. I can help you with career guidance, answer questions about different professions, and provide personalized advice. What would you like to know about your career?
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chat-input" placeholder="Ask me about careers, skills, or your future..." onkeypress="handleChatKeyPress(event)">
+                        <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Roadmap Section -->
+        <section id="roadmap-section" class="roadmap-section">
+            <div class="container">
+                <div class="roadmap-container">
+                    <h2>Career Exploration Hub</h2>
+                    <p>Discover detailed career paths, salary insights, and growth opportunities</p>
+                    
+                    <!-- Career Explorer Interface -->
+                    <div class="career-explorer">
+                        <div class="career-filters">
+                            <div class="filter-group">
+                                <label>🔍 Search Careers:</label>
+                                <input type="text" id="careerSearch" placeholder="Search by title, skills, or industry..." onkeyup="filterCareers()">
+                            </div>
+                            <div class="filter-group">
+                                <label>🏢 Category:</label>
+                                <select id="categoryFilter" onchange="filterCareers()">
+                                    <option value="">All Categories</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Design">Design</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Creative">Creative</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="Operations">Operations</option>
+                                    <option value="Environmental">Environmental</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>💰 Salary Range:</label>
+                                <select id="salaryFilter" onchange="filterCareers()">
+                                    <option value="">All Ranges</option>
+                                    <option value="entry">$30K - $60K (Entry Level)</option>
+                                    <option value="mid">$60K - $100K (Mid Level)</option>
+                                    <option value="senior">$100K+ (Senior Level)</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>📈 Growth Outlook:</label>
+                                <select id="growthFilter" onchange="filterCareers()">
+                                    <option value="">All Growth Rates</option>
+                                    <option value="excellent">Excellent (15%+)</option>
+                                    <option value="good">Good (5-15%)</option>
+                                    <option value="stable">Stable (0-5%)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="career-grid" id="careerGrid">
+                            <!-- Careers will be loaded here dynamically -->
+                        </div>
+                        
+                        <div class="loading-careers" id="loadingCareers">
+                            <div class="loading-spinner"></div>
+                            <p>Loading career profiles...</p>
+                        </div>
+                    </div>
+                    
+                    <div id="roadmap-content"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Learning Resources Section -->
+        <section id="learning-section" class="learning-section">
+            <div class="container">
+                <div class="learning-container">
+                    <h2>🎓 Learning Resources Hub</h2>
+                    <p>Discover courses, certifications, and learning paths to advance your career</p>
+                    
+                    <!-- Learning Resources Interface -->
+                    <div class="learning-explorer">
+                        <div class="learning-tabs">
+                            <button class="tab-btn active" onclick="showLearningTab('courses')" id="coursesTab">
+                                📚 All Courses
+                            </button>
+                            <button class="tab-btn" onclick="showLearningTab('paths')" id="pathsTab">
+                                🗺️ Learning Paths
+                            </button>
+                            <button class="tab-btn auth-required" onclick="showLearningTab('progress')" id="progressTab" style="display: none;">
+                                📊 My Progress
+                            </button>
+                            <button class="tab-btn" onclick="showLearningTab('skills')" id="skillsTab">
+                                🎯 Skills
+                            </button>
+                        </div>
+                        
+                        <div class="learning-filters">
+                            <div class="filter-group">
+                                <label>🔍 Search:</label>
+                                <input type="text" id="learningSearch" placeholder="Search courses, skills, or providers..." onkeyup="filterLearningResources()">
+                            </div>
+                            <div class="filter-group">
+                                <label>🎯 Category:</label>
+                                <select id="learningCategoryFilter" onchange="filterLearningResources()">
+                                    <option value="">All Categories</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Design">Design</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Soft Skills">Soft Skills</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>📊 Level:</label>
+                                <select id="difficultyFilter" onchange="filterLearningResources()">
+                                    <option value="">All Levels</option>
+                                    <option value="Beginner">Beginner</option>
+                                    <option value="Intermediate">Intermediate</option>
+                                    <option value="Advanced">Advanced</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>💰 Cost:</label>
+                                <select id="costFilter" onchange="filterLearningResources()">
+                                    <option value="">All Costs</option>
+                                    <option value="Free">Free</option>
+                                    <option value="Paid">Paid</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Courses Tab Content -->
+                        <div id="coursesContent" class="tab-content active">
+                            <div class="learning-grid" id="learningGrid">
+                                <!-- Learning resources will be loaded here dynamically -->
+                            </div>
+                            
+                            <div class="loading-learning" id="loadingLearning">
+                                <div class="loading-spinner"></div>
+                                <p>Loading learning resources...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Learning Paths Tab Content -->
+                        <div id="pathsContent" class="tab-content">
+                            <div class="paths-overview">
+                                <h3>🎓 Your Learning Paths</h3>
+                                <p>Follow personalized learning paths tailored to your career goals</p>
+                            </div>
+                            
+                            <!-- User Learning Paths Section -->
+                            <div class="user-paths-section">
+                                <div class="section-header">
+                                    <h4>📚 My Learning Paths</h4>
+                                    <button onclick="showPathCreation()" class="btn btn-primary auth-required" style="display: none;">
+                                        ➕ Create New Path
+                                    </button>
+                                    <div class="auth-prompt" style="display: block;">
+                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In to Create Paths</button>
+                                    </div>
+                                </div>
+                                <div id="userPathsContainer">
+                                    <!-- User's enrolled learning paths will be loaded here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Recommended Paths Section -->
+                            <div class="recommended-paths-section">
+                                <div class="section-header">
+                                    <h4>⭐ Recommended Paths</h4>
+                                    <p>Paths curated based on your assessment and career interests</p>
+                                </div>
+                                <div id="recommendedPathsContainer">
+                                    <!-- Recommended learning paths will be loaded here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Static Learning Paths Grid (Legacy) -->
+                            <div class="paths-grid" id="pathsGrid">
+                                <!-- Static learning paths will be loaded here dynamically -->
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Tab Content -->
+                        <div id="progressContent" class="tab-content">
+                            <div class="progress-overview">
+                                <h3>📊 Your Learning Journey</h3>
+                                <p>Track your progress and continue where you left off</p>
+                                <div id="progressGrid">
+                                    <!-- User progress will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Skills Tab Content -->
+                        <div id="skillsContent" class="tab-content">
+                            <div id="skillsPrerequisitesContainer">
+                                <!-- Skills with prerequisites will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Section -->
+        <section id="community-section" class="community-section">
+            <div class="container">
+                <div class="community-container">
+                    <h2>🤝 Community Hub</h2>
+                    <p>Connect with peers, find mentors, and join discussions in our thriving career community</p>
+                    
+                    <!-- Community Navigation -->
+                    <div class="community-nav">
+                        <button class="community-nav-btn active" onclick="showCommunityTab('forum')" id="forumNavBtn">
+                            💬 Forum
+                        </button>
+                        <button class="community-nav-btn" onclick="showCommunityTab('networking')" id="networkingNavBtn">
+                            🌐 Networking
+                        </button>
+                        <button class="community-nav-btn" onclick="showCommunityTab('mentorship')" id="mentorshipNavBtn">
+                            👨‍🏫 Mentorship
+                        </button>
+                        <button class="community-nav-btn auth-required" onclick="showCommunityTab('activity')" id="activityNavBtn" style="display: none;">
+                            📊 My Activity
+                        </button>
+                    </div>
+                    
+                    <!-- Forum Tab Content -->
+                    <div id="forumContent" class="community-tab-content active">
+                        <div class="forum-header">
+                            <h3>💬 Discussion Forum</h3>
+                            <p>Ask questions, share insights, and connect with fellow career seekers</p>
+                            <button class="btn btn-primary auth-required" onclick="showCreatePostModal()" style="display: none;">
+                                ✏️ Create New Post
+                            </button>
+                        </div>
+                        
+                        <!-- Forum Categories -->
+                        <div class="forum-categories" id="forumCategories">
+                            <div class="loading-spinner"></div>
+                            <p>Loading forum categories...</p>
+                        </div>
+                        
+                        <!-- Recent Posts -->
+                        <div class="forum-posts-section">
+                            <h4>📝 Recent Discussions</h4>
+                            <div class="forum-posts" id="forumPosts">
+                                <div class="loading-spinner"></div>
+                                <p>Loading recent posts...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Networking Tab Content -->
+                    <div id="networkingContent" class="community-tab-content">
+                        <div class="networking-header">
+                            <h3>🌐 Professional Networking</h3>
+                            <p>Build your professional network and connect with like-minded individuals</p>
+                        </div>
+                        
+                        <div class="networking-stats" id="networkingStats">
+                            <div class="stat-card">
+                                <div class="stat-number" id="connectionsCount">0</div>
+                                <div class="stat-label">Your Connections</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Active Members</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">50+</div>
+                                <div class="stat-label">Industries</div>
+                            </div>
+                        </div>
+                        
+                        <div class="networking-actions">
+                            <button class="btn btn-primary auth-required" onclick="showFindPeersModal()" style="display: none;">
+                                🔍 Find Peers
+                            </button>
+                            <button class="btn btn-secondary auth-required" onclick="showMyConnections()" style="display: none;">
+                                👥 My Connections
+                            </button>
+                            <div class="auth-prompt" style="display: block;">
+                                <p>Sign in to start networking with professionals in your field</p>
+                                <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
+                            </div>
+                        </div>
+                        
+                        <div class="connections-grid" id="connectionsGrid">
+                            <!-- Connections will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Mentorship Tab Content -->
+                    <div id="mentorshipContent" class="community-tab-content">
+                        <div class="mentorship-header">
+                            <h3>👨‍🏫 Mentorship Program</h3>
+                            <p>Find experienced mentors or become a mentor to help others grow</p>
+                        </div>
+                        
+                        <div class="mentorship-options">
+                            <div class="mentorship-card">
+                                <div class="mentorship-icon">🎓</div>
+                                <h4>Find a Mentor</h4>
+                                <p>Connect with experienced professionals who can guide your career journey</p>
+                                <button class="btn btn-primary" onclick="showFindMentorsModal()">Find Mentors</button>
+                            </div>
+                            
+                            <div class="mentorship-card">
+                                <div class="mentorship-icon">🏆</div>
+                                <h4>Become a Mentor</h4>
+                                <p>Share your expertise and help others succeed in their careers</p>
+                                <button class="btn btn-secondary auth-required" onclick="showBecomeMentorModal()" style="display: none;">
+                                    Become a Mentor
+                                </button>
+                                <div class="auth-prompt" style="display: block;">
+                                    <p>Sign in to become a mentor</p>
+                                    <button onclick="authManager.showLoginModal()" class="btn btn-secondary">Sign In</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="featured-mentors">
+                            <h4>🌟 Featured Mentors</h4>
+                            <div class="mentors-grid" id="mentorsGrid">
+                                <div class="loading-spinner"></div>
+                                <p>Loading mentors...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Activity Tab Content -->
+                    <div id="activityContent" class="community-tab-content">
+                        <div class="activity-header">
+                            <h3>📊 Your Community Activity</h3>
+                            <p>Track your engagement and contributions to the MindMate community</p>
+                        </div>
+                        
+                        <div class="activity-timeline" id="activityTimeline">
+                            <!-- User activity will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics-section" class="analytics-section">
+            <div class="container">
+                <div class="analytics-container">
+                    <h2>📊 Career Analytics Dashboard</h2>
+                    <p>Advanced insights into career success, market trends, and salary intelligence</p>
+                    
+                    <!-- Analytics Navigation -->
+                    <div class="analytics-nav">
+                        <button class="analytics-nav-btn active" onclick="showAnalyticsTab('predictions')" id="predictionsNavBtn">
+                            🔮 Success Predictions
+                        </button>
+                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('peer-comparison')" id="peerComparisonNavBtn">
+                            👥 Peer Comparison
+                        </button>
+                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('reports')" id="reportsNavBtn">
+                            📄 Career Reports
+                        </button>
+                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('trends')" id="trendsNavBtn">
+                            📈 Market Trends
+                        </button>
+                        <button class="analytics-nav-btn" onclick="console.log('AI Twin button clicked!'); showAnalyticsTab('ai-twin')" id="aiTwinNavBtn">
+                            🧠 AI Twin
+                        </button>
+                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('salary')" id="salaryNavBtn">
+                            💰 Salary Insights
+                        </button>
+                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('skills')" id="skillsNavBtn">
+                            🎯 Skills Gap Analysis
+                        </button>
+                    </div>
+                    
+                    <!-- Career Success Predictions Tab -->
+                    <div id="predictionsContent" class="analytics-tab-content active">
+                        <div class="predictions-header">
+                            <h3>🔮 Career Success Predictions</h3>
+                            <p>AI-powered predictions based on your assessment and market data</p>
+                        </div>
+                        
+                        <div class="predictions-container" id="predictionsContainer">
+                            <div class="auth-required-message" style="display: block;">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🔐</div>
+                                    <h4>Sign in for Personalized Predictions</h4>
+                                    <p>Complete your career assessment and sign in to get detailed success predictions for your career path.</p>
+                                    <div class="empty-actions">
+                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
+                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="predictions-grid" id="predictionsGrid" style="display: none;">
+                                <!-- Predictions will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Peer Comparison Tab -->
+                    <div id="peer-comparisonContent" class="analytics-tab-content">
+                        <div class="peer-comparison-header">
+                            <h3>👥 Peer Comparison & Benchmarking</h3>
+                            <p>See how you compare to peers in your field and get targeted improvement recommendations</p>
+                        </div>
+                        
+                        <div class="peer-comparison-container" id="peerComparisonContainer">
+                            <div class="auth-required-message" style="display: block;">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🔐</div>
+                                    <h4>Sign in for Peer Comparison</h4>
+                                    <p>Complete your career assessment and sign in to see how you compare to peers in your field.</p>
+                                    <div class="empty-actions">
+                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
+                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="peer-comparison-grid" id="peerComparisonGrid" style="display: none;">
+                                <!-- Peer comparison will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Career Reports Tab -->
+                    <div id="reportsContent" class="analytics-tab-content">
+                        <div class="reports-header">
+                            <h3>📄 Career Reports & Export</h3>
+                            <p>Generate comprehensive career reports and export them for sharing or personal records</p>
+                        </div>
+                        
+                        <div class="reports-container" id="reportsContainer">
+                            <div class="auth-required-message" style="display: block;">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🔐</div>
+                                    <h4>Sign in to Generate Reports</h4>
+                                    <p>Complete your career assessment and sign in to generate personalized career reports.</p>
+                                    <div class="empty-actions">
+                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
+                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="reports-grid" id="reportsGrid" style="display: none;">
+                                <!-- Report templates will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Market Trends Tab -->
+                    <div id="trendsContent" class="analytics-tab-content">
+                        <div class="trends-header">
+                            <h3>📈 Market Trends & Insights</h3>
+                            <p>Stay ahead with the latest career market trends and emerging opportunities</p>
+                        </div>
+                        
+                        <div class="trends-container" id="trendsContainer">
+                            <div class="loading-spinner"></div>
+                            <p>Loading market trends...</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Twin Tab -->
+                    <div id="ai-twinContent" class="analytics-tab-content">
+                        <div class="ai-twin-header">
+                            <h3>🧠 AI Twin - Career Simulation & Prediction</h3>
+                            <p>Your personalized AI career twin that simulates different career paths and predicts success probabilities</p>
+                        </div>
+                        
+                        <div class="ai-twin-container" id="aiTwinContainer">
+                            <div class="auth-required-message" style="display: block;">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🧠</div>
+                                    <h4>Sign in for AI Twin Simulations</h4>
+                                    <p>Complete your career assessment and sign in to access your personalized AI career twin.</p>
+                                    <div class="empty-actions">
+                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
+                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-twin-grid" id="aiTwinGrid" style="display: none;">
+                                <!-- AI Twin simulations will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Salary Insights Tab -->
+                    <div id="salaryContent" class="analytics-tab-content">
+                        <div class="salary-header">
+                            <h3>💰 Salary Intelligence</h3>
+                            <p>Comprehensive salary data, trends, and negotiation insights</p>
+                        </div>
+                        
+                        <div class="salary-explorer">
+                            <div class="salary-filters">
+                                <div class="filter-group">
+                                    <label>🎯 Career:</label>
+                                    <input type="text" id="salaryCareerInput" placeholder="Enter career title..." list="careerOptions">
+                                    <datalist id="careerOptions">
+                                        <option value="Software Developer">
+                                        <option value="Data Scientist">
+                                        <option value="UX Designer">
+                                        <option value="Product Manager">
+                                        <option value="Marketing Manager">
+                                        <option value="Sales Representative">
+                                        <option value="Project Manager">
+                                        <option value="Cybersecurity Analyst">
+                                        <option value="AI/ML Engineer">
+                                        <option value="DevOps Engineer">
+                                        <option value="Full Stack Developer">
+                                        <option value="Mobile App Developer">
+                                        <option value="Blockchain Developer">
+                                        <option value="FinTech Specialist">
+                                        <option value="EdTech Consultant">
+                                        <option value="HealthTech Analyst">
+                                        <option value="Nurse">
+                                        <option value="Teacher">
+                                    </datalist>
+                                </div>
+                                <div class="filter-group">
+                                    <label>📍 Location:</label>
+                                    <select id="salaryLocationSelect">
+                                        <option value="India">India (Average)</option>
+                                        <option value="Mumbai">Mumbai</option>
+                                        <option value="Delhi">Delhi</option>
+                                        <option value="Bangalore">Bangalore</option>
+                                        <option value="Hyderabad">Hyderabad</option>
+                                        <option value="Chennai">Chennai</option>
+                                        <option value="Pune">Pune</option>
+                                        <option value="Kolkata">Kolkata</option>
+                                        <option value="Gurgaon">Gurgaon</option>
+                                        <option value="Noida">Noida</option>
+                                        <option value="India" selected>India (Average)</option>
+                                        <option value="UK">United Kingdom (Average)</option>
+                                        <option value="Canada">Canada (Average)</option>
+                                        <option value="Australia">Australia (Average)</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>🎯 Experience:</label>
+                                    <select id="salaryExperienceSelect">
+                                        <option value="entry">Entry Level (0-2 years)</option>
+                                        <option value="mid" selected>Mid Level (3-7 years)</option>
+                                        <option value="senior">Senior Level (8+ years)</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary" onclick="getSalaryInsights()">🔍 Get Insights</button>
+                            </div>
+                            
+                            <div class="salary-results" id="salaryResults">
+                                <div class="empty-state">
+                                    <div class="empty-icon">💰</div>
+                                    <h4>Get Salary Insights</h4>
+                                    <p>Enter a career title, location, and experience level to get detailed salary insights and negotiation tips.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Skills Gap Analysis Tab -->
+                    <div id="skillsAnalyticsContent" class="analytics-tab-content">
+                        <div class="skills-header">
+                            <h3>🎯 Skills Gap Analysis</h3>
+                            <p>Identify skill gaps and get personalized development recommendations</p>
+                        </div>
+                        
+                        <div class="skills-explorer">
+                            <div class="skills-input">
+                                <div class="filter-group">
+                                    <label>🎯 Target Career:</label>
+                                    <input type="text" id="skillsCareerInput" placeholder="Enter your target career..." list="careerOptions">
+                                </div>
+                                <button class="btn btn-primary auth-required" onclick="analyzeSkillsGap()" style="display: none;">🔍 Analyze Skills Gap</button>
+                                <div class="auth-prompt" style="display: block;">
+                                    <p>Sign in and complete an assessment to analyze your skills gap</p>
+                                    <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
+                                </div>
+                            </div>
+                            
+                            <div class="skills-results" id="skillsResults">
+                                <div class="empty-state">
+                                    <div class="empty-icon">🎯</div>
+                                    <h4>Skills Gap Analysis</h4>
+                                    <p>Complete your career assessment and enter a target career to see what skills you need to develop.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer" role="contentinfo">
+            <div class="container">
+                <p>&copy; 2025 MindMate - AI-Powered Career Guidance 🇮🇳</p>
+                <p>Empowering students with world-class career guidance and market intelligence.</p>
+                <p>Developed by <a href="https://www.linkedin.com/in/sameermistri/" target="_blank" style="color: var(--mm-mint);">Sam</a></p>
+            </div>
+        </footer>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="bottom-nav" role="navigation" aria-label="Bottom">
+            <button data-action="navigate" data-section="hero">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </button>
+            <button data-action="start-quiz">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Assess</span>
+            </button>
+            <button data-action="navigate" data-section="chat-section">
+                <i class="fas fa-robot"></i>
+                <span>AI Chat</span>
+            </button>
+            <button data-action="navigate" data-section="roadmap-section">
+                <i class="fas fa-map"></i>
+                <span>Careers</span>
+            </button>
+            <button data-action="navigate" data-section="learning-section">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Learning</span>
+            </button>
+            <button data-action="navigate" data-section="community-section">
+                <i class="fas fa-users"></i>
+                <span>Community</span>
+            </button>
+            <button data-action="navigate" data-section="analytics-section">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Accessible live region for notifications -->
+    <div id="notification-live" aria-live="polite" role="status" style="position:absolute;left:-9999px;height:1px;width:1px;overflow:hidden;"></div>
+
+    <!-- Minimal analytics consent banner -->
+    <div id="consent-banner" style="position:fixed;left:0;right:0;bottom:0;display:none;background:#0a0a0a;color:#fff;padding:12px;border-top:1px solid rgba(255,255,255,0.1);z-index:9999;">
+        <div style="max-width:1000px;margin:0 auto;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+            <span>We use anonymized analytics to improve MindMate. You can opt out anytime.</span>
+            <div style="display:flex;gap:8px;">
+                <button class="btn btn-secondary" data-action="consent-decline">Decline</button>
+                <button class="btn btn-primary" data-action="consent-accept">Allow</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "MindMate",
+        "url": "https://mindmate.app/",
+        "description": "AI-powered career guidance platform for personalized assessments, learning resources, and community networking",
+        "publisher": {
+            "@type": "Organization",
+            "name": "MindMate"
+        },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://mindmate.app/?section=roadmap&query={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
+</body>
+</html>

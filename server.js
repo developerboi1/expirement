@@ -130,29 +130,53 @@ app.post('/api/analytics/events', async (req, res) => {
     }
 });
 
+// Test endpoints for debugging
+app.get('/api/auth/test', (req, res) => {
+    res.json({ message: 'Auth endpoint is working', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/db/test', async (req, res) => {
+    try {
+        // Test database connection by running a simple query
+        const result = await db.testConnection();
+        res.json({ message: 'Database connection successful', result });
+    } catch (error) {
+        console.error('Database test error:', error);
+        res.status(500).json({ error: 'Database connection failed', details: error.message });
+    }
+});
+
 // Authentication endpoints
 app.post('/api/auth/register', async (req, res) => {
     try {
+        console.log('🔍 DEBUG: Registration request received:', req.body);
         const { username, email, password } = req.body;
         
         if (!username || !email || !password) {
+            console.log('❌ DEBUG: Missing required fields');
             return res.status(400).json({ error: 'Missing required fields' });
         }
         
         if (password.length < 6) {
+            console.log('❌ DEBUG: Password too short');
             return res.status(400).json({ error: 'Password must be at least 6 characters' });
         }
         
+        console.log('🔍 DEBUG: Creating user in database...');
         const user = await db.createUser(username, email, password);
+        console.log('✅ DEBUG: User created successfully:', user);
+        
         const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+        console.log('✅ DEBUG: JWT token generated');
         
         res.json({ 
             success: true, 
             user: { id: user.id, username: user.username, email: user.email },
             token 
         });
+        console.log('✅ DEBUG: Registration response sent');
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('❌ DEBUG: Registration error:', error);
         if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
             res.status(400).json({ error: 'Username or email already exists' });
         } else {
@@ -163,21 +187,26 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
     try {
+        console.log('🔍 DEBUG: Login request received:', { username: req.body.username });
         const { username, password } = req.body;
         
         if (!username || !password) {
+            console.log('❌ DEBUG: Missing username or password');
             return res.status(400).json({ error: 'Username and password required' });
         }
         
+        console.log('🔍 DEBUG: Authenticating user...');
         const result = await db.authenticateUser(username, password);
         
         if (result) {
+            console.log('✅ DEBUG: Authentication successful for user:', result.user.username);
             res.json({ success: true, user: result.user, token: result.token });
         } else {
+            console.log('❌ DEBUG: Authentication failed - invalid credentials');
             res.status(401).json({ error: 'Invalid credentials' });
         }
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('❌ DEBUG: Login error:', error);
         res.status(500).json({ error: 'Login failed' });
     }
 });

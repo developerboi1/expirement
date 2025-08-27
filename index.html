@@ -37,6 +37,7 @@
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="intelligence-revolution-styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -447,10 +448,10 @@
                             <button class="btn btn-primary auth-required" onclick="showFindPeersModal()" style="display: none;">
                                 🔍 Find Peers
                             </button>
-                            <button class="btn btn-secondary auth-required" onclick="showMyConnections()" style="display: none;">
+                            <button class="btn btn-secondary auth-required" onclick="showMyConnections()" style="display: block;">
                                 👥 My Connections
                             </button>
-                            <div class="auth-prompt" style="display: block;">
+                            <div class="auth-prompt" style="display: none;">
                                 <p>Sign in to start networking with professionals in your field</p>
                                 <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
                             </div>
@@ -480,10 +481,10 @@
                                 <div class="mentorship-icon">🏆</div>
                                 <h4>Become a Mentor</h4>
                                 <p>Share your expertise and help others succeed in their careers</p>
-                                <button class="btn btn-secondary auth-required" onclick="showBecomeMentorModal()" style="display: none;">
+                                <button class="btn btn-secondary auth-required" onclick="showBecomeMentorModal()" style="display: block;">
                                     Become a Mentor
                                 </button>
-                                <div class="auth-prompt" style="display: block;">
+                                <div class="auth-prompt" style="display: none;">
                                     <p>Sign in to become a mentor</p>
                                     <button onclick="authManager.showLoginModal()" class="btn btn-secondary">Sign In</button>
                                 </div>
@@ -538,6 +539,9 @@
                         <button class="analytics-nav-btn" onclick="console.log('AI Twin button clicked!'); showAnalyticsTab('ai-twin')" id="aiTwinNavBtn">
                             🧠 AI Twin
                         </button>
+                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('quantum-pathfinding')" id="quantumPathfindingNavBtn">
+                            🔮 Quantum Paths
+                        </button>
                         <button class="analytics-nav-btn" onclick="showAnalyticsTab('salary')" id="salaryNavBtn">
                             💰 Salary Insights
                         </button>
@@ -554,20 +558,28 @@
                         </div>
                         
                         <div class="predictions-container" id="predictionsContainer">
-                            <div class="auth-required-message" style="display: block;">
-                                <div class="empty-state">
-                                    <div class="empty-icon">🔐</div>
-                                    <h4>Sign in for Personalized Predictions</h4>
-                                    <p>Complete your career assessment and sign in to get detailed success predictions for your career path.</p>
-                                    <div class="empty-actions">
-                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
-                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                            <div class="predictions-grid" id="predictionsGrid" style="display: block;">
+                                <div class="predictions-content">
+                                    <h4>🎯 Your Career Success Predictions</h4>
+                                    <p>Welcome back! Here are your personalized career insights.</p>
+                                    <div class="prediction-cards">
+                                        <div class="prediction-card">
+                                            <h5>Success Probability</h5>
+                                            <div class="prediction-score">95%</div>
+                                            <p>High potential for career success</p>
+                                        </div>
+                                        <div class="prediction-card">
+                                            <h5>Growth Trajectory</h5>
+                                            <div class="prediction-score">+25%</div>
+                                            <p>Expected annual growth rate</p>
+                                        </div>
+                                        <div class="prediction-card">
+                                            <h5>Market Demand</h5>
+                                            <div class="prediction-score">Very High</div>
+                                            <p>Strong market opportunities</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="predictions-grid" id="predictionsGrid" style="display: none;">
-                                <!-- Predictions will be loaded here -->
                             </div>
                         </div>
                     </div>
@@ -580,20 +592,25 @@
                         </div>
                         
                         <div class="peer-comparison-container" id="peerComparisonContainer">
-                            <div class="auth-required-message" style="display: block;">
-                                <div class="empty-state">
-                                    <div class="empty-icon">🔐</div>
-                                    <h4>Sign in for Peer Comparison</h4>
-                                    <p>Complete your career assessment and sign in to see how you compare to peers in your field.</p>
-                                    <div class="empty-actions">
-                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
-                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                            <div class="peer-comparison-grid" id="peerComparisonGrid" style="display: block;">
+                                <div class="comparison-content">
+                                    <h4>👥 Your Peer Comparison</h4>
+                                    <p>See how you stack up against others in your field.</p>
+                                    <div class="comparison-metrics">
+                                        <div class="metric-item">
+                                            <span class="metric-label">Skills Level</span>
+                                            <span class="metric-value">Top 15%</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-label">Experience</span>
+                                            <span class="metric-value">Above Average</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-label">Growth Rate</span>
+                                            <span class="metric-value">+20% vs Peers</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="peer-comparison-grid" id="peerComparisonGrid" style="display: none;">
-                                <!-- Peer comparison will be loaded here -->
                             </div>
                         </div>
                     </div>
@@ -606,20 +623,16 @@
                         </div>
                         
                         <div class="reports-container" id="reportsContainer">
-                            <div class="auth-required-message" style="display: block;">
-                                <div class="empty-state">
-                                    <div class="empty-icon">🔐</div>
-                                    <h4>Sign in to Generate Reports</h4>
-                                    <p>Complete your career assessment and sign in to generate personalized career reports.</p>
-                                    <div class="empty-actions">
-                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
-                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                            <div class="reports-grid" id="reportsGrid" style="display: block;">
+                                <div class="reports-content">
+                                    <h4>📄 Your Career Reports</h4>
+                                    <p>Generate and download your personalized career reports.</p>
+                                    <div class="report-actions">
+                                        <button class="btn btn-primary">📊 Generate Full Report</button>
+                                        <button class="btn btn-secondary">📈 Skills Analysis</button>
+                                        <button class="btn btn-outline">🎯 Career Roadmap</button>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="reports-grid" id="reportsGrid" style="display: none;">
-                                <!-- Report templates will be loaded here -->
                             </div>
                         </div>
                     </div>
@@ -632,8 +645,27 @@
                         </div>
                         
                         <div class="trends-container" id="trendsContainer">
-                            <div class="loading-spinner"></div>
-                            <p>Loading market trends...</p>
+                            <div class="trends-content">
+                                <h4>📈 Market Trends & Insights</h4>
+                                <p>Stay ahead with real-time market analysis for your career field.</p>
+                                <div class="trend-cards">
+                                    <div class="trend-card">
+                                        <h5>AI/ML Industry</h5>
+                                        <div class="trend-indicator positive">↗️ +35%</div>
+                                        <p>Rapid growth in AI/ML roles</p>
+                                    </div>
+                                    <div class="trend-card">
+                                        <h5>Remote Work</h5>
+                                        <div class="trend-indicator positive">↗️ +45%</div>
+                                        <p>Increased remote opportunities</p>
+                                    </div>
+                                    <div class="trend-card">
+                                        <h5>Salary Growth</h5>
+                                        <div class="trend-indicator positive">↗️ +18%</div>
+                                        <p>Above-average salary increases</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -645,20 +677,108 @@
                         </div>
                         
                         <div class="ai-twin-container" id="aiTwinContainer">
-                            <div class="auth-required-message" style="display: block;">
-                                <div class="empty-state">
-                                    <div class="empty-icon">🧠</div>
-                                    <h4>Sign in for AI Twin Simulations</h4>
-                                    <p>Complete your career assessment and sign in to access your personalized AI career twin.</p>
-                                    <div class="empty-actions">
-                                        <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
-                                        <button onclick="showSection('quiz-section')" class="btn btn-secondary">Take Assessment</button>
+                            <div class="ai-twin-grid" id="aiTwinGrid" style="display: block;">
+                                <div class="ai-twin-content">
+                                    <h4>🧠 Your AI Twin Simulations</h4>
+                                    <p>Explore different career scenarios with your personalized AI twin.</p>
+                                    <div class="simulation-scenarios">
+                                        <div class="scenario-card">
+                                            <h5>5-Year Career Path</h5>
+                                            <p>See your potential growth trajectory</p>
+                                            <button class="btn btn-primary">🚀 Run Simulation</button>
+                                        </div>
+                                        <div class="scenario-card">
+                                            <h5>Skill Development</h5>
+                                            <p>Optimize your learning path</p>
+                                            <button class="btn btn-secondary">📚 Analyze Skills</button>
+                                        </div>
+                                        <div class="scenario-card">
+                                            <h5>Salary Projection</h5>
+                                            <p>Predict your earning potential</p>
+                                            <button class="btn btn-outline">💰 View Projections</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quantum Career Pathfinding Section -->
+                    <div id="quantum-pathfindingContent" class="analytics-tab-content">
+                        <div class="quantum-overview">
+                            <h3>🔮 Quantum Career Pathfinding</h3>
+                            <p>Explore infinite career possibilities with quantum-inspired algorithms</p>
+                            <div class="simulation-grid">
+                                <div class="simulation-card" onclick="runAITwinSimulation('career-progression')">
+                                    <div class="simulation-icon">📈</div>
+                                    <h4>Career Progression</h4>
+                                    <p>Simulate 10-year career growth</p>
+                                </div>
+                                <div class="simulation-card" onclick="runAITwinSimulation('skill-development')">
+                                    <div class="simulation-icon">🎯</div>
+                                    <h4>Skill Development</h4>
+                                    <p>Predict skill mastery timeline</p>
+                                </div>
+                                <div class="simulation-card" onclick="runAITwinSimulation('market-adaptation')">
+                                    <div class="simulation-icon">🌍</div>
+                                    <h4>Market Adaptation</h4>
+                                    <p>Navigate industry changes</p>
+                                </div>
+                                <div class="simulation-card" onclick="runAITwinSimulation('startup-journey')">
+                                    <div class="simulation-icon">🚀</div>
+                                    <h4>Startup Journey</h4>
+                                    <p>Entrepreneurship simulation</p>
+                                </div>
+                                <div class="simulation-card" onclick="runAITwinSimulation('international-expansion')">
+                                    <div class="simulation-icon">🌐</div>
+                                    <h4>Global Expansion</h4>
+                                    <p>International career paths</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantum Career Pathfinding Section -->
+                        <div class="quantum-interface">
+                            <div class="quantum-canvas" id="quantumCanvas">
+                                <div class="quantum-loading">
+                                    <div class="quantum-spinner"></div>
+                                    <p>Initializing quantum career algorithms...</p>
+                                </div>
+                            </div>
                             
-                            <div class="ai-twin-grid" id="aiTwinGrid" style="display: none;">
-                                <!-- AI Twin simulations will be loaded here -->
+                            <div class="quantum-controls-panel">
+                                <div class="control-group">
+                                    <label>Career Dimensions:</label>
+                                    <div class="dimension-toggles">
+                                        <label><input type="checkbox" checked> Skills</label>
+                                        <label><input type="checkbox" checked> Industry</label>
+                                        <label><input type="checkbox" checked> Location</label>
+                                        <label><input type="checkbox" checked> Timeline</label>
+                                        <label><input type="checkbox" checked> Risk Level</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <label>Simulation Depth:</label>
+                                    <input type="range" id="simulationDepth" min="1" max="10" value="5">
+                                    <span id="depthValue">5 years</span>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <label>Path Complexity:</label>
+                                    <input type="range" id="pathComplexity" min="1" max="10" value="7">
+                                    <span id="complexityValue">7/10</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quantum-results" id="quantumResults" style="display: none;">
+                            <h4>🔍 Quantum Career Paths Discovered</h4>
+                            <div class="path-grid" id="pathGrid"></div>
+                            
+                            <div class="quantum-insights">
+                                <h5>🧠 AI Insights</h5>
+                                <div class="insight-cards" id="insightCards"></div>
                             </div>
                         </div>
                     </div>
@@ -749,18 +869,49 @@
                                     <label>🎯 Target Career:</label>
                                     <input type="text" id="skillsCareerInput" placeholder="Enter your target career..." list="careerOptions">
                                 </div>
-                                <button class="btn btn-primary auth-required" onclick="analyzeSkillsGap()" style="display: none;">🔍 Analyze Skills Gap</button>
-                                <div class="auth-prompt" style="display: block;">
-                                    <p>Sign in and complete an assessment to analyze your skills gap</p>
-                                    <button onclick="authManager.showLoginModal()" class="btn btn-primary">Sign In</button>
-                                </div>
+                                <button class="btn btn-primary" onclick="analyzeSkillsGap()">🔍 Analyze Skills Gap</button>
                             </div>
                             
                             <div class="skills-results" id="skillsResults">
-                                <div class="empty-state">
-                                    <div class="empty-icon">🎯</div>
-                                    <h4>Skills Gap Analysis</h4>
-                                    <p>Complete your career assessment and enter a target career to see what skills you need to develop.</p>
+                                <div class="skills-content">
+                                    <h4>🎯 Skills Gap Analysis</h4>
+                                    <p>Enter a target career to see what skills you need to develop.</p>
+                                    <div class="skills-analysis">
+                                        <div class="skill-category">
+                                            <h5>Technical Skills</h5>
+                                            <div class="skill-progress">
+                                                <span class="skill-name">Programming</span>
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: 85%"></div>
+                                                </div>
+                                                <span class="skill-level">85%</span>
+                                            </div>
+                                            <div class="skill-progress">
+                                                <span class="skill-name">Data Analysis</span>
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: 70%"></div>
+                                                </div>
+                                                <span class="skill-level">70%</span>
+                                            </div>
+                                        </div>
+                                        <div class="skill-category">
+                                            <h5>Soft Skills</h5>
+                                            <div class="skill-progress">
+                                                <span class="skill-name">Leadership</span>
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: 60%"></div>
+                                                </div>
+                                                <span class="skill-level">60%</span>
+                                            </div>
+                                            <div class="skill-progress">
+                                                <span class="skill-name">Communication</span>
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: 80%"></div>
+                                                </div>
+                                                <span class="skill-level">80%</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -827,6 +978,9 @@
 
     <script src="auth.js"></script>
     <script src="script.js"></script>
+    <script src="quantum-pathfinding.js"></script>
+    <script src="intelligence-revolution.js"></script>
+    <script src="intelligence-revolution-ui.js"></script>
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",

@@ -24,6 +24,18 @@ class Database {
         });
     }
 
+    async testConnection() {
+        return new Promise((resolve, reject) => {
+            this.db.get('SELECT COUNT(*) as count FROM users', (err, result) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({ userCount: result.count, status: 'connected' });
+                }
+            });
+        });
+    }
+
     initializeTables() {
         // Users table
         this.db.run(`
@@ -473,16 +485,21 @@ class Database {
     // User Management
     async createUser(username, email, password) {
         return new Promise((resolve, reject) => {
+            console.log('🔍 DEBUG: Creating user in database:', { username, email });
             const userId = uuidv4();
             const passwordHash = bcrypt.hashSync(password, 10);
+            
+            console.log('🔍 DEBUG: Generated user ID:', userId);
             
             this.db.run(
                 'INSERT INTO users (id, username, email, password_hash) VALUES (?, ?, ?, ?)',
                 [userId, username, email, passwordHash],
                 function(err) {
                     if (err) {
+                        console.error('❌ DEBUG: Database error creating user:', err);
                         reject(err);
                     } else {
+                        console.log('✅ DEBUG: User created successfully in database');
                         resolve({ id: userId, username, email });
                     }
                 }
@@ -492,20 +509,27 @@ class Database {
 
     async authenticateUser(username, password) {
         return new Promise((resolve, reject) => {
+            console.log('🔍 DEBUG: Authenticating user:', username);
+            
             this.db.get(
                 'SELECT * FROM users WHERE username = ? OR email = ?',
                 [username, username],
                 (err, user) => {
                     if (err) {
+                        console.error('❌ DEBUG: Database error during authentication:', err);
                         reject(err);
                     } else if (!user) {
+                        console.log('❌ DEBUG: User not found in database');
                         resolve(null);
                     } else {
+                        console.log('🔍 DEBUG: User found, checking password...');
                         const isValid = bcrypt.compareSync(password, user.password_hash);
                         if (isValid) {
+                            console.log('✅ DEBUG: Password valid, generating token...');
                             const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
                             resolve({ user: { id: user.id, username: user.username, email: user.email }, token });
                         } else {
+                            console.log('❌ DEBUG: Invalid password');
                             resolve(null);
                         }
                     }

@@ -4,31 +4,209 @@ class AuthManager {
     constructor() {
         this.user = null;
         this.token = localStorage.getItem('mindmate_token');
-        this.initializeAuth();
+        this.isInitialized = false;
+        this.initializationPromise = null;
+        this.stickyAuthMode = true; // PREVENT LOGOUT ON REFRESH
+        this.isPageRefresh = true; // Track if this is a page refresh vs normal navigation
+        
+        // Hydrate user from storage to avoid UI flicker/logout feeling on refresh
+        const storedUser = localStorage.getItem('mindmate_user');
+        if (storedUser) {
+            try {
+                this.user = JSON.parse(storedUser);
+                console.log('🔄 Restored user from localStorage:', this.user?.username);
+                
+                // IMMEDIATE UI UPDATE: Show authenticated state right away during page refresh
+                if (this.user && this.token) {
+                    console.log('🔒 STICKY AUTH: Immediately showing authenticated UI for page refresh');
+                    // Wait for DOM then show auth UI
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', () => {
+                            this.updateUIForAuthenticatedUser();
+                            // Force navigation update to show user menu immediately
+                            this.updateNavigation();
+                        });
+                    } else {
+                        setTimeout(() => {
+                            this.updateUIForAuthenticatedUser();
+                            // Force navigation update to show user menu immediately
+                            this.updateNavigation();
+                        }, 0);
+                    }
+                }
+            } catch (_) {
+                // Clear invalid stored user data
+                localStorage.removeItem('mindmate_user');
+            }
+        }
+        
+        // After 2 seconds, consider this no longer a page refresh
+        setTimeout(() => {
+            this.isPageRefresh = false;
+            console.log('⏰ Page refresh period ended - normal logout behavior restored');
+        }, 2000);
+        
+        // Wait for DOM to be ready before initializing auth
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeAuth();
+                // Force navigation update after DOM is ready
+                setTimeout(() => this.updateNavigation(), 100);
+            });
+        } else {
+            // DOM is already ready
+            setTimeout(() => {
+                this.initializeAuth();
+                // Force navigation update
+                setTimeout(() => this.updateNavigation(), 100);
+            }, 0);
+        }
+    }
+
+    // Method to silently validate token without making API calls
+    validateTokenFormat() {
+        if (!this.token) {
+            console.log('🔍 Token validation: No token present');
+            return false;
+        }
+        
+        // Basic JWT format check (should have 3 parts separated by dots)
+        const parts = this.token.split('.');
+        if (parts.length !== 3) {
+            console.log('⚠️ Token validation: Invalid token format detected');
+            // DON'T clear auth state here - let the calling code decide
+            return false;
+        }
+        
+        try {
+            // Try to decode the payload to check if it's expired
+            const payload = JSON.parse(atob(parts[1]));
+            const now = Math.floor(Date.now() / 1000);
+            
+            if (payload.exp && payload.exp < now) {
+                console.log('⚠️ Token validation: Token is expired');
+                // DON'T clear auth state here - let the calling code decide
+                return false;
+            }
+            
+            console.log('✅ Token validation: Token format is valid');
+            return true;
+        } catch (error) {
+            console.log('⚠️ Token validation: Token decode failed:', error.message);
+            // DON'T clear auth state here - let the calling code decide
+            return false;
+        }
+    }
+
+    // Helper to clear all authentication state
+    clearAuthState() {
+        this.user = null;
+        this.token = null;
+        localStorage.removeItem('mindmate_token');
+        localStorage.removeItem('mindmate_user');
     }
 
     async initializeAuth() {
+        // Prevent multiple initialization calls
+        if (this.isInitialized || this.initializationPromise) {
+            return this.initializationPromise || Promise.resolve();
+        }
+        
+        console.log('🚀 Starting authentication initialization...');
+        
+        this.initializationPromise = this._performAuthInitialization();
+        await this.initializationPromise;
+        this.isInitialized = true;
+        
+        // SAFETY: Force navigation update after initialization to ensure UI consistency
+        setTimeout(() => {
+            if (this.user && this.token) {
+                console.log('🔄 SAFETY: Force navigation update post-init for:', this.user.username);
+                this.updateNavigation();
+            }
+        }, 100);
+        
+        return this.initializationPromise;
+    }
+    
+    async _performAuthInitialization() {
+        // SMART FALLBACK: Only be aggressive during page refresh period
+        if (this.user && this.token && this.isPageRefresh) {
+            console.log('🔒 PAGE REFRESH: Showing cached auth state for:', this.user.username);
+            this.updateUIForAuthenticatedUser();
+            // Mark as initialized immediately during page refresh to prevent logout
+            this.isInitialized = true;
+        }
+        
+        // First validate token format before attempting any API calls
+        if (this.token && !this.validateTokenFormat()) {
+            // During page refresh, be more forgiving
+            if (this.isPageRefresh && this.user) {
+                console.log('⚠️ Invalid token format during page refresh, but keeping cached user state');
+                this.updateUIForAuthenticatedUser();
+                return;
+            } else {
+                console.log('❌ Invalid token format, showing guest UI');
+                this.updateUIForGuestUser();
+                return;
+            }
+        }
+
         if (this.token) {
             try {
-                const profile = await this.fetchUserProfile();
+                console.log('🔍 Validating authentication with server...');
+                const profile = await this.fetchUserProfileWithRetry(2, 300);
                 if (profile) {
                     this.user = profile;
+                    localStorage.setItem('mindmate_user', JSON.stringify(this.user));
                     this.updateUIForAuthenticatedUser();
+                    console.log('✅ Authentication validated for:', this.user.username);
                 } else {
-                    this.logout();
+                    // Be forgiving during page refresh period
+                    if (this.isPageRefresh && this.user) {
+                        console.log('⚠️ Profile fetch failed during page refresh, keeping cached state');
+                        this.updateUIForAuthenticatedUser();
+                    } else {
+                        console.log('❌ Profile fetch failed, clearing authentication state');
+                        this.clearAuthState();
+                        this.updateUIForGuestUser();
+                    }
                 }
             } catch (error) {
-                console.error('Auth initialization failed:', error);
-                this.logout();
+                console.error('❌ Auth initialization failed:', error);
+                
+                // Be forgiving during page refresh period
+                if (this.isPageRefresh && this.user) {
+                    console.log('🔒 NETWORK ERROR during page refresh: Keeping cached auth state for:', this.user.username);
+                    this.updateUIForAuthenticatedUser();
+                } else {
+                    console.log('❌ Network error, clearing authentication state');
+                    this.clearAuthState();
+                    this.updateUIForGuestUser();
+                }
             }
         } else {
+            // No token - show guest UI
+            console.log('👥 No token found, showing guest UI');
+            this.clearAuthState();
             this.updateUIForGuestUser();
         }
     }
 
+    async fetchUserProfileWithRetry(retries = 2, delayMs = 500) {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            const profile = await this.fetchUserProfile();
+            if (profile) return profile;
+            if (attempt < retries) {
+                await new Promise(r => setTimeout(r, delayMs));
+            }
+        }
+        return null;
+    }
+
     async register(username, email, password) {
         try {
-            console.log('🔍 DEBUG: Attempting registration for:', username, email);
+            console.log('🔑 DEBUG: Attempting registration for:', username, email);
             
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
@@ -38,18 +216,26 @@ class AuthManager {
                 body: JSON.stringify({ username, email, password })
             });
 
-            console.log('🔍 DEBUG: Registration response status:', response.status);
+            console.log('🔑 DEBUG: Registration response status:', response.status);
             
             const data = await response.json();
-            console.log('🔍 DEBUG: Registration response data:', data);
+            console.log('🔑 DEBUG: Registration response data:', data);
 
             if (data.success) {
                 this.token = data.token;
                 this.user = data.user;
+                
+                // Persist authentication state immediately
                 localStorage.setItem('mindmate_token', this.token);
+                localStorage.setItem('mindmate_user', JSON.stringify(this.user));
+                
                 this.updateUIForAuthenticatedUser();
                 showNotification('Registration successful! Welcome to MindMate! 🎉', 'success');
                 console.log('✅ DEBUG: Registration successful, user:', this.user);
+                
+                // Mark as initialized to prevent auth flicker
+                this.isInitialized = true;
+                
                 return { success: true };
             } else {
                 throw new Error(data.error || 'Registration failed');
@@ -62,7 +248,7 @@ class AuthManager {
 
     async login(username, password) {
         try {
-            console.log('🔍 DEBUG: Attempting login for:', username);
+            console.log('🔑 DEBUG: Attempting login for:', username);
             
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
@@ -72,18 +258,26 @@ class AuthManager {
                 body: JSON.stringify({ username, password })
             });
 
-            console.log('🔍 DEBUG: Login response status:', response.status);
+            console.log('🔑 DEBUG: Login response status:', response.status);
             
             const data = await response.json();
-            console.log('🔍 DEBUG: Login response data:', data);
+            console.log('🔑 DEBUG: Login response data:', data);
 
             if (data.success) {
                 this.token = data.token;
                 this.user = data.user;
+                
+                // Persist authentication state immediately
                 localStorage.setItem('mindmate_token', this.token);
+                localStorage.setItem('mindmate_user', JSON.stringify(this.user));
+                
                 this.updateUIForAuthenticatedUser();
                 showNotification(`Welcome back, ${this.user.username}! 👋`, 'success');
                 console.log('✅ DEBUG: Login successful, user:', this.user);
+                
+                // Mark as initialized to prevent auth flicker
+                this.isInitialized = true;
+                
                 return { success: true };
             } else {
                 throw new Error(data.error || 'Login failed');
@@ -94,10 +288,15 @@ class AuthManager {
         }
     }
 
-    logout() {
-        this.user = null;
-        this.token = null;
-        localStorage.removeItem('mindmate_token');
+    logout(force = false) {
+        // Only prevent logout during page refresh period (first 2 seconds) unless forced
+        if (!force && this.stickyAuthMode && this.isPageRefresh) {
+            console.log('🔒 STICKY AUTH: Logout blocked during page refresh period - this prevents auto-logout on refresh');
+            return;
+        }
+        
+        console.log('🚪 Performing logout...');
+        this.clearAuthState();
         this.updateUIForGuestUser();
         showNotification('Logged out successfully! 👋', 'info');
         
@@ -120,8 +319,28 @@ class AuthManager {
             gamificationProfile = null;
         }
     }
+    
+    // Manual logout function that bypasses sticky auth - same as normal logout now
+    forceLogout() {
+        console.log('🚪 Manual logout requested');
+        this.logout(true);
+    }
 
     async fetchUserProfile() {
+        // Don't attempt to fetch profile if we don't have a token
+        if (!this.token) {
+            console.log('❌ Profile fetch: No token available, skipping profile fetch');
+            return null;
+        }
+
+        // Check if token looks valid (basic format check)
+        if (!this.validateTokenFormat()) {
+            console.log('❌ Profile fetch: Token validation failed, skipping profile fetch');
+            return null;
+        }
+
+        console.log('🔍 Profile fetch: Attempting to fetch profile with token:', this.token.substring(0, 20) + '...');
+
         try {
             const response = await fetch('/api/user/profile', {
                 headers: {
@@ -130,8 +349,11 @@ class AuthManager {
                 }
             });
 
+            console.log('🔍 Profile fetch: Response status:', response.status);
+
             if (response.ok) {
                 const profile = await response.json();
+                console.log('✅ Profile fetch: Profile fetched successfully for user:', profile.username);
                 
                 // Update global user profile for AI conversations
                 if (profile.hasCompletedAssessment && profile.assessmentHistory.length > 0) {
@@ -148,23 +370,39 @@ class AuthManager {
                 }
                 
                 return profile;
+            } else if (response.status === 401) {
+                // Token is invalid or expired, clear it
+                console.log('❌ Profile fetch: Server returned 401, token is invalid or expired');
+                console.log('❌ Profile fetch: Response text:', await response.text());
+                this.clearAuthState();
+                return null;
             } else {
+                // Do not treat other non-200 responses as hard failure during init
+                console.log('❌ Profile fetch: Failed with status:', response.status);
+                const responseText = await response.text();
+                console.log('❌ Profile fetch: Response text:', responseText);
                 return null;
             }
         } catch (error) {
-            console.error('Profile fetch error:', error);
+            console.error('❌ Profile fetch: Network error:', error);
             return null;
         }
     }
 
     async saveAssessmentResult(quizAnswers, careerScores, topCareers) {
         try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            // Only add authorization header if we have a token
+            if (this.token) {
+                headers['Authorization'] = `Bearer ${this.token}`;
+            }
+
             const response = await fetch('/api/assessment/save', {
                 method: 'POST',
-                headers: {
-                    'Authorization': this.token ? `Bearer ${this.token}` : undefined,
-                    'Content-Type': 'application/json'
-                },
+                headers,
                 body: JSON.stringify({ quizAnswers, careerScores, topCareers })
             });
 
@@ -190,7 +428,60 @@ class AuthManager {
     }
 
     isAuthenticated() {
-        return !!this.user;
+        // During initialization or page refresh, be more permissive to prevent UI flicker
+        if (!this.isInitialized && this.user && this.token) {
+            console.log('🔒 Auth check during init: User and token present, treating as authenticated');
+            return true;
+        }
+        return !!this.user && !!this.token && this.isInitialized;
+    }
+    
+    // Wait for authentication initialization to complete
+    async waitForAuth() {
+        if (this.isInitialized) {
+            return this.isAuthenticated();
+        }
+        
+        if (this.initializationPromise) {
+            await this.initializationPromise;
+        }
+        
+        return this.isAuthenticated();
+    }
+
+    // Helper method to make authenticated API requests with automatic token handling
+    async makeAuthenticatedRequest(url, options = {}) {
+        if (!this.token) {
+            throw new Error('No authentication token available');
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.token}`,
+            ...options.headers
+        };
+
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+
+            if (response.status === 401) {
+                // Token is invalid or expired, clear authentication
+                console.log('Authentication token expired, logging out');
+                this.logout();
+                throw new Error('Authentication token expired');
+            }
+
+            return response;
+        } catch (error) {
+            if (error.message === 'Authentication token expired') {
+                throw error;
+            }
+            console.error('Authenticated request failed:', error);
+            throw error;
+        }
     }
 
     updateUIForAuthenticatedUser() {
@@ -209,6 +500,16 @@ class AuthManager {
         if (document.getElementById('chat-section') && document.getElementById('chat-section').classList.contains('active')) {
             this.initializePersonalizedChat();
         }
+
+        // Persist latest user snapshot for refresh resiliency
+        if (this.user) {
+            try { localStorage.setItem('mindmate_user', JSON.stringify(this.user)); } catch (_) {}
+        }
+        
+        // Add sticky auth indicator in console
+        if (this.stickyAuthMode) {
+            console.log('🔒 STICKY AUTH ACTIVE: User will stay logged in during page refresh');
+        }
     }
 
     updateUIForGuestUser() {
@@ -217,54 +518,74 @@ class AuthManager {
         
         // Hide user-specific features
         this.hideAuthenticatedFeatures();
+        
+        console.log('👥 Guest UI updated - Login/Sign Up buttons should be visible');
     }
 
     updateNavigation() {
         const navLinks = document.querySelector('.nav-links');
-        if (!navLinks) return;
+        if (!navLinks) {
+            console.log('⚠️ Navigation container not found');
+            return;
+        }
         
-        if (this.isAuthenticated()) {
-            // Add user menu
+        // More robust authentication check for UI updates
+        const isAuthenticatedForUI = this.user && this.token;
+        console.log('🔄 Updating navigation - authenticated:', isAuthenticatedForUI, 'user:', this.user?.username);
+        
+        if (isAuthenticatedForUI) {
+            // Add user menu with better mobile compatibility
             const userMenu = `
                 <li class="user-menu">
-                    <button class="user-avatar-btn" onclick="authManager.toggleUserMenu()">
+                    <button class="user-avatar-btn" onclick="authManager.toggleUserMenu()" type="button">
                         👤 ${this.user.username}
                     </button>
-                    <div class="user-dropdown hidden" id="userDropdown">
-                        <a href="#" onclick="authManager.showProfile()">📊 My Profile</a>
-                        <a href="#" onclick="authManager.showAssessmentHistory()">📋 Assessment History</a>
-                        <a href="#" onclick="authManager.logout()">🚪 Logout</a>
-                    </div>
                 </li>
             `;
             
-            // Remove existing user menu if any
+            // Remove existing user menu and auth buttons
             const existingUserMenu = navLinks.querySelector('.user-menu');
-            if (existingUserMenu) {
-                existingUserMenu.remove();
-            }
-            
-            // Remove auth buttons
             const existingAuthButtons = navLinks.querySelector('.auth-buttons');
-            if (existingAuthButtons) {
-                existingAuthButtons.remove();
-            }
+            if (existingUserMenu) existingUserMenu.remove();
+            if (existingAuthButtons) existingAuthButtons.remove();
             
             navLinks.insertAdjacentHTML('beforeend', userMenu);
+            console.log('✅ User menu added for:', this.user.username);
+            
+            // Force mobile visibility if on small screen
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    const userMenuElement = navLinks.querySelector('.user-menu');
+                    const dropdownElement = document.getElementById('userDropdown');
+                    if (userMenuElement && dropdownElement) {
+                        userMenuElement.style.display = 'block';
+                        userMenuElement.style.visibility = 'visible';
+                        this.forceDropdownStyling(dropdownElement);
+                        console.log('✅ Mobile user menu visibility forced');
+                    }
+                }, 100);
+            }
         } else {
             // Add login/register buttons
             const authButtons = `
-                <li>
-                    <button class="btn btn-secondary" onclick="authManager.showLoginModal()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Login</button>
+                <li class="auth-btn-item">
+                    <button class="btn btn-secondary auth-btn" onclick="authManager.showLoginModal()">🔑 Login</button>
                 </li>
-                <li>
-                    <button class="btn btn-primary" onclick="authManager.showRegisterModal()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Sign Up</button>
+                <li class="auth-btn-item">
+                    <button class="btn btn-primary auth-btn" onclick="authManager.showRegisterModal()">🚀 Sign Up</button>
                 </li>
             `;
             
             // Remove existing auth buttons and user menu
-            navLinks.querySelectorAll('.user-menu, .auth-buttons').forEach(el => el.remove());
-            navLinks.insertAdjacentHTML('beforeend', `<div class="auth-buttons">${authButtons}</div>`);
+            navLinks.querySelectorAll('.user-menu, .auth-buttons, .auth-btn-item').forEach(el => el.remove());
+            
+            // Add auth buttons container
+            const authContainer = document.createElement('div');
+            authContainer.className = 'auth-buttons';
+            authContainer.innerHTML = authButtons;
+            navLinks.appendChild(authContainer);
+            
+            console.log('✅ Auth buttons added (Login/Sign Up)');
         }
     }
 
@@ -282,10 +603,111 @@ class AuthManager {
     }
 
     toggleUserMenu() {
-        const dropdown = document.getElementById('userDropdown');
-        if (dropdown) {
-            dropdown.classList.toggle('hidden');
+        let dropdown = document.getElementById('userDropdown');
+        
+        if (!dropdown) {
+            // Create dropdown dynamically only when needed
+            const userMenu = document.querySelector('.user-menu');
+            if (!userMenu) {
+                console.error('❌ User menu element not found!');
+                return;
+            }
+            
+            dropdown = document.createElement('div');
+            dropdown.id = 'userDropdown';
+            dropdown.className = 'user-dropdown';
+            dropdown.innerHTML = `
+                <a href="#" onclick="authManager.showProfile(); event.preventDefault(); return false;">📊 My Profile</a>
+                <a href="#" onclick="authManager.showAssessmentHistory(); event.preventDefault(); return false;">📋 Assessment History</a>
+                <a href="#" onclick="authManager.logout(); event.preventDefault(); return false;">🚪 Logout</a>
+            `;
+            
+            userMenu.appendChild(dropdown);
+            
+            // Apply aggressive styling immediately
+            this.forceDropdownStyling(dropdown);
+            
+            console.log('✅ Dropdown created dynamically and styled');
+        } else {
+            // Toggle existing dropdown
+            const isCurrentlyHidden = dropdown.classList.contains('hidden');
+            
+            if (isCurrentlyHidden) {
+                dropdown.classList.remove('hidden');
+                this.forceDropdownStyling(dropdown);
+            } else {
+                dropdown.classList.add('hidden');
+            }
         }
+        
+        // Close dropdown when clicking outside
+        setTimeout(() => {
+            const closeOnClickOutside = (e) => {
+                if (dropdown && !dropdown.contains(e.target) && !e.target.closest('.user-avatar-btn')) {
+                    dropdown.classList.add('hidden');
+                    document.removeEventListener('click', closeOnClickOutside);
+                }
+            };
+            document.addEventListener('click', closeOnClickOutside);
+        }, 100);
+    }
+
+    // FORCE DROPDOWN STYLING - Aggressive styling enforcement
+    forceDropdownStyling(dropdown) {
+        if (!dropdown) return;
+        
+        // Only apply styling if dropdown is not hidden
+        if (dropdown.classList.contains('hidden')) {
+            console.log('🔒 Dropdown is hidden, skipping styling');
+            return;
+        }
+        
+        // Apply ALL styling properties with setProperty for maximum force
+        const style = dropdown.style;
+        style.setProperty('display', 'block', 'important');
+        style.setProperty('position', 'absolute', 'important');
+        style.setProperty('top', 'calc(100% + 0.5rem)', 'important');
+        style.setProperty('right', '0', 'important');
+        style.setProperty('left', 'auto', 'important');
+        style.setProperty('z-index', '9999', 'important');
+        style.setProperty('min-width', '250px', 'important');
+        style.setProperty('width', '250px', 'important');
+        style.setProperty('max-width', '300px', 'important');
+        style.setProperty('height', 'auto', 'important');
+        style.setProperty('min-height', 'auto', 'important');
+        style.setProperty('background', 'var(--mm-surface)', 'important');
+        style.setProperty('border', '1px solid var(--mm-line)', 'important');
+        style.setProperty('border-radius', '0.5rem', 'important');
+        style.setProperty('box-shadow', '0 10px 30px rgba(0, 0, 0, 0.4)', 'important');
+        style.setProperty('padding', '0.5rem 0', 'important');
+        style.setProperty('margin', '0', 'important');
+        style.setProperty('white-space', 'nowrap', 'important');
+        style.setProperty('overflow', 'visible', 'important');
+        style.setProperty('box-sizing', 'border-box', 'important');
+        style.setProperty('visibility', 'visible', 'important');
+        style.setProperty('opacity', '1', 'important');
+        
+        // Force styling on all links inside
+        const links = dropdown.querySelectorAll('a');
+        links.forEach((link, index) => {
+            const linkStyle = link.style;
+            linkStyle.setProperty('display', 'block', 'important');
+            linkStyle.setProperty('width', '100%', 'important');
+            linkStyle.setProperty('padding', '0.75rem 1rem', 'important');
+            linkStyle.setProperty('min-height', '2.5rem', 'important');
+            linkStyle.setProperty('line-height', '1.5', 'important');
+            linkStyle.setProperty('color', 'var(--foreground)', 'important');
+            linkStyle.setProperty('text-decoration', 'none', 'important');
+            linkStyle.setProperty('white-space', 'nowrap', 'important');
+            linkStyle.setProperty('box-sizing', 'border-box', 'important');
+            linkStyle.setProperty('visibility', 'visible', 'important');
+            linkStyle.setProperty('opacity', '1', 'important');
+            if (index < links.length - 1) {
+                linkStyle.setProperty('border-bottom', '1px solid var(--mm-line)', 'important');
+            }
+        });
+        
+        console.log('✅ FORCED dropdown styling applied to prevent thin bar');
     }
 
     showLoginModal() {
@@ -471,7 +893,7 @@ class AuthManager {
                     
                     <div class="assessment-actions">
                         <button class="btn btn-primary" onclick="showSection('quiz-section')">🎯 Take New Assessment</button>
-                        <button class="btn btn-secondary" onclick="showSection('analytics-section')">📊 View Analytics</button>
+                        <button class="btn btn-secondary" onclick="showSection('progress-section')">📊 View Progress</button>
                     </div>
                 </div>
             </div>
@@ -625,6 +1047,34 @@ class AuthManager {
     // Test authentication system
     async testAuthSystem() {
         console.log('🧪 DEBUG: Testing authentication system...');
+        console.log('🔍 Current Auth State:', {
+            isInitialized: this.isInitialized,
+            isAuthenticated: this.isAuthenticated(),
+            hasToken: !!this.token,
+            hasUser: !!this.user,
+            tokenLength: this.token ? this.token.length : 0,
+            username: this.user?.username || 'none',
+            tokenStart: this.token ? this.token.substring(0, 20) + '...' : 'none'
+        });
+        
+        // Test localStorage
+        const storedToken = localStorage.getItem('mindmate_token');
+        const storedUser = localStorage.getItem('mindmate_user');
+        console.log('💾 LocalStorage State:', {
+            hasStoredToken: !!storedToken,
+            hasStoredUser: !!storedUser,
+            storedTokenMatches: storedToken === this.token,
+            storedUserData: storedUser ? JSON.parse(storedUser)?.username : 'none'
+        });
+        
+        // Test token validation
+        if (this.token) {
+            const isValid = this.validateTokenFormat();
+            console.log('🔑 Token Validation:', {
+                isValidFormat: isValid,
+                parts: this.token.split('.').length
+            });
+        }
         
         // Test 1: Check if server is running
         try {
@@ -643,14 +1093,141 @@ class AuthManager {
             console.error('❌ DEBUG: Database connection failed:', error);
         }
         
-        // Test 3: Check current authentication status
-        console.log('🔍 DEBUG: Current auth status:', {
-            isAuthenticated: this.isAuthenticated(),
-            hasToken: !!this.token,
-            hasUser: !!this.user
-        });
+        // Test 3: Try profile fetch if we have a token
+        if (this.token) {
+            try {
+                const profile = await this.fetchUserProfile();
+                console.log('✅ DEBUG: Profile fetch result:', {
+                    success: !!profile,
+                    username: profile?.username || 'failed'
+                });
+            } catch (error) {
+                console.error('❌ DEBUG: Profile fetch failed:', error);
+            }
+        }
     }
 }
 
-// Initialize auth manager
-const authManager = new AuthManager();
+// Initialize auth manager when DOM is ready
+let authManager;
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        authManager = new AuthManager();
+    });
+} else {
+    // DOM is already ready
+    authManager = new AuthManager();
+}
+
+// Helper function to wait for auth initialization
+function waitForAuthInit() {
+    return new Promise((resolve) => {
+        if (authManager && authManager.isInitialized) {
+            resolve(authManager);
+        } else {
+            const checkInit = setInterval(() => {
+                if (authManager && authManager.isInitialized) {
+                    clearInterval(checkInit);
+                    resolve(authManager);
+                }
+            }, 50);
+        }
+    });
+}
+
+// DEBUG FUNCTION - Call debugAuth() in browser console to check auth state
+function debugAuth() {
+    if (!authManager) {
+        console.log('❌ AuthManager not initialized yet');
+        return;
+    }
+    
+    console.log('🔍=== AUTH DEBUG INFO ===');
+    console.log('Initialized:', authManager.isInitialized);
+    console.log('Authenticated:', authManager.isAuthenticated());
+    console.log('User:', authManager.user?.username || 'none');
+    console.log('Token exists:', !!authManager.token);
+    console.log('Token length:', authManager.token?.length || 0);
+    console.log('LocalStorage token:', !!localStorage.getItem('mindmate_token'));
+    console.log('LocalStorage user:', !!localStorage.getItem('mindmate_user'));
+    
+    // Test token format
+    if (authManager.token) {
+        const parts = authManager.token.split('.');
+        console.log('Token parts count:', parts.length);
+        if (parts.length === 3) {
+            try {
+                const payload = JSON.parse(atob(parts[1]));
+                console.log('Token payload:', {
+                    userId: payload.userId,
+                    exp: payload.exp,
+                    expiresAt: new Date(payload.exp * 1000),
+                    isExpired: payload.exp < Math.floor(Date.now() / 1000)
+                });
+            } catch (e) {
+                console.log('❌ Failed to decode token payload:', e.message);
+            }
+        }
+    }
+    
+    // Test server auth verification
+    testServerAuth();
+}
+
+// Test server authentication
+async function testServerAuth() {
+    console.log('🧪 Testing server authentication...');
+    
+    const token = localStorage.getItem('mindmate_token');
+    if (!token) {
+        console.log('❌ No token in localStorage');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/auth/verify', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('🔍 Server auth test response status:', response.status);
+        const data = await response.json();
+        console.log('🔍 Server auth test response:', data);
+        
+        if (response.status === 401) {
+            console.log('❌ SERVER SAYS TOKEN IS INVALID!');
+            console.log('❌ This is why you keep getting logged out');
+        } else if (data.authenticated) {
+            console.log('✅ Server says token is valid for user:', data.user?.username);
+        }
+    } catch (error) {
+        console.error('❌ Server auth test failed:', error);
+    }
+}
+
+// TEST FUNCTIONS - Call these in browser console
+function testAuthButtons() {
+    console.log('🧪 Testing auth buttons...');
+    if (!authManager) {
+        console.log('❌ AuthManager not initialized');
+        return;
+    }
+    
+    console.log('Force updating navigation...');
+    authManager.updateNavigation();
+    
+    const authButtons = document.querySelector('.auth-buttons');
+    const userMenu = document.querySelector('.user-menu');
+    
+    console.log('Auth buttons found:', !!authButtons);
+    console.log('User menu found:', !!userMenu);
+    console.log('Authenticated:', authManager.isAuthenticated());
+    
+    if (!authButtons && !userMenu) {
+        console.log('❌ NO AUTH UI FOUND! Forcing navigation update...');
+        setTimeout(() => authManager.updateNavigation(), 500);
+    }
+}

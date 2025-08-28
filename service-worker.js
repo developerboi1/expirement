@@ -207,12 +207,19 @@ async function fetchWithTimeout(request, timeoutMs = 6000) {
 function shouldCache(request) {
     const url = new URL(request.url);
     
-    // Don't cache authentication requests
-    if (url.pathname.includes('/auth/')) {
+    // Only allow caching of explicitly safe API paths
+    const isCacheableApi = CACHEABLE_API_PATHS.some(path => url.pathname.startsWith(path));
+
+    // Block caching for all auth or user-specific endpoints
+    if (url.pathname.includes('/auth/') ||
+        url.pathname.includes('/user/') ||
+        url.pathname.includes('/assessment/history') ||
+        url.pathname.includes('/gamification') ||
+        url.pathname.startsWith('/api/') && !isCacheableApi) {
         return false;
     }
     
-    // Don't cache POST/PUT/DELETE requests
+    // Don't cache non-GET requests
     if (request.method !== 'GET') {
         return false;
     }

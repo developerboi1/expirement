@@ -1,3 +1,24 @@
+// MindMate Career Guidance Platform - Enhanced Script v2.0.0
+// Cache Test - This should appear in console if new version loads
+console.log('🚀 Enhanced Script v2.0.0 loaded successfully - ' + new Date().toISOString());
+
+// TEST FUNCTION - Call testEnhancedReports() in browser console to verify functions are loaded
+function testEnhancedReports() {
+    console.log('📝 Testing Enhanced Report Functions:');
+    console.log('generateCareerReport type:', typeof generateCareerReport);
+    console.log('generateSkillsReport type:', typeof generateSkillsReport);
+    console.log('generateProgressReport type:', typeof generateProgressReport);
+    console.log('showReportModal type:', typeof showReportModal);
+    
+    if (typeof generateCareerReport === 'function') {
+        console.log('✅ Enhanced functions are loaded correctly!');
+        alert('✅ Enhanced Report Functions Loaded!\n\nThe enhanced report system is ready. Click OK then try the report buttons.');
+    } else {
+        console.log('❌ Enhanced functions not found!');
+        alert('❌ Issue Found!\n\nEnhanced functions are not loaded. Check browser cache.');
+    }
+}
+
 // Simple MindMate Script - Immediate Working Version
 
 // Enhanced Quiz Data with 12 Sophisticated Questions
@@ -206,6 +227,49 @@ function showSection(sectionName) {
         loadCareerProfiles();
     }
 
+    // Ensure quiz renders when navigating directly to quiz section
+    if (sectionName === 'quiz-section') {
+        const quizContentEl = document.getElementById('quiz-content');
+        if (quizContentEl && quizContentEl.children.length === 0) {
+            try {
+                // Initialize fresh quiz view without re-invoking showSection to avoid loops
+                currentQuestionIndex = 0;
+                quizAnswers = {};
+                displayQuestion();
+            } catch (e) {
+                console.warn('Quiz render on navigation failed:', e);
+            }
+        }
+    }
+
+    // Enhanced section-specific initialization
+    if (sectionName === 'learning-section') {
+        showLearningTab('courses');
+        if (authManager && authManager.isAuthenticated()) {
+            document.querySelectorAll('.auth-required').forEach(el => {
+                el.style.display = 'block';
+            });
+        }
+    }
+
+    if (sectionName === 'community-section') {
+        showCommunityTab('forum');
+        if (authManager && authManager.isAuthenticated()) {
+            document.querySelectorAll('.auth-required').forEach(el => {
+                el.style.display = 'block';
+            });
+        }
+    }
+
+    if (sectionName === 'progress-section') {
+        showProgressTab('overview');
+        if (authManager && authManager.isAuthenticated()) {
+            document.querySelectorAll('.auth-required').forEach(el => {
+                el.style.display = 'block';
+            });
+        }
+    }
+
     // Scroll to top smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -224,6 +288,14 @@ function showSection(sectionName) {
     
     // Auto-close mobile menu when section changes
     closeMobileMenu();
+}
+
+// Close mobile menu function
+function closeMobileMenu() {
+    const navLinks = document.querySelector('.nav-links');
+    if (navLinks) {
+        navLinks.classList.remove('open');
+    }
 }
 
 // Quiz Functions
@@ -1312,10 +1384,10 @@ function displayCareers(careers) {
         const categoryIcon = getCategoryIcon(career.category);
         const salaryRange = career.salary_range;
         const salaryText = salaryRange ? 
-            `$${(salaryRange.min / 1000).toFixed(0)}K - $${(salaryRange.max / 1000).toFixed(0)}K` : 
+            `₹${(salaryRange.min >= 100000 ? (salaryRange.min/100000).toFixed(0) + 'L' : (salaryRange.min/1000).toFixed(0) + 'k')} - ₹${(salaryRange.max >= 100000 ? (salaryRange.max/100000).toFixed(0) + 'L' : (salaryRange.max/1000).toFixed(0) + 'k')}` : 
             'Salary varies';
         const medianSalary = salaryRange?.median ? 
-            ` (Avg: $${(salaryRange.median / 1000).toFixed(0)}K)` : '';
+            ` (Avg: ₹${(salaryRange.median >= 100000 ? (salaryRange.median/100000).toFixed(0) + 'L' : (salaryRange.median/1000).toFixed(0) + 'k')})` : '';
 
         const growthClass = getGrowthClass(career.growth_outlook);
         const skillsDisplay = Array.isArray(career.skills_required) ? 
@@ -1720,12 +1792,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Delegated click handling for navigation and actions
     document.addEventListener('click', (e) => {
+        console.log('Click detected on:', e.target);
+        
         // Intercept anchor links with ?section= as SPA navigation
         const link = e.target.closest('a[href*="?section="]');
         if (link) {
+            console.log('Navigation link clicked:', link.href);
             e.preventDefault();
             const u = new URL(link.href, window.location.origin);
             const section = mapRouteToSection(u.searchParams.get('section'));
+            console.log('Navigating to section:', section);
             trackEvent('nav_click', { section });
             showSection(section);
             
@@ -1738,10 +1814,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!target) return;
 
         const action = target.getAttribute('data-action');
+        console.log('Data action clicked:', action, target);
+        
         if (action === 'navigate') {
             e.preventDefault();
             const section = target.getAttribute('data-section');
             if (section) {
+                console.log('Navigating via data-action to:', section);
                 trackEvent('nav_click', { section });
                 showSection(section);
                 
@@ -1750,7 +1829,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else if (action === 'start-quiz') {
             e.preventDefault();
+            console.log('Starting quiz');
             trackEvent('cta_click', { action: 'start_quiz' });
+            showSection('quiz-section');
             startQuiz();
         } else if (action === 'toggle-mobile-menu') {
             e.preventDefault();
@@ -1913,7 +1994,7 @@ function setupSectionLazyInit() {
         }
     }, { rootMargin: '0px 0px -40% 0px', threshold: 0.1 });
 
-    ['roadmap-section','learning-section','community-section','analytics-section']
+    ['roadmap-section','learning-section','community-section']
         .forEach(id => {
             const el = document.getElementById(id);
             if (el) observer.observe(el);
@@ -1934,9 +2015,6 @@ function initializeSection(sectionId) {
         case 'community-section':
             try { showCommunityTab('forum'); } catch(_) {}
             break;
-        case 'analytics-section':
-            try { showAnalyticsTab('predictions'); } catch(_) {}
-            break;
     }
 }
 
@@ -1946,10 +2024,14 @@ function mapRouteToSection(route) {
         'home': 'hero',
         'assessment': 'quiz-section',
         'chat': 'chat-section',
-        'careers': 'roadmap-section',
-        'learning': 'learning-section',
-        'community': 'community-section',
-        'analytics': 'analytics-section'
+        // Map old sections to new progress section
+        'careers': 'progress-section',
+        'learning': 'progress-section',
+        'community': 'progress-section',
+        'analytics': 'progress-section',
+        'roadmap': 'progress-section',
+        // New progress section
+        'progress': 'progress-section'
     };
     return routes[route] || route;
 }
@@ -1959,7 +2041,10 @@ function mapActionToSection(action) {
     const map = {
         'assessment': 'quiz-section',
         'chat': 'chat-section',
-        'community': 'community-section'
+        'community': 'progress-section',
+        'careers': 'progress-section',
+        'learning': 'progress-section',
+        'analytics': 'progress-section'
     };
     return map[action] || mapRouteToSection(action);
 }
@@ -2069,9 +2154,39 @@ function displayLearningResources(resources) {
         return;
     }
 
+    // Helper to convert '$' costs to INR compact for display
+    const toINRCost = (costStr) => {
+        if (!costStr || typeof costStr !== 'string') return costStr;
+        const lower = costStr.toLowerCase();
+        if (lower.includes('free')) return costStr;
+        // Extract numeric value possibly with commas, K, /month, /year, exam fee
+        const kMatch = costStr.match(/\$\s?(\d+(?:\.\d+)?)\s?k/i);
+        if (kMatch) {
+            const usd = parseFloat(kMatch[1]) * 1000;
+            const inr = Math.round(usd * 83);
+            return `₹${(inr/1000).toFixed(0)}k` + (lower.includes('/month') ? '/month' : lower.includes('/year') ? '/year' : lower.includes('exam fee') ? ' (exam fee)' : '');
+        }
+        const numMatch = costStr.match(/\$\s?([\d,]+)(?:\/(month|year))?/i);
+        if (numMatch) {
+            const usd = parseInt(numMatch[1].replace(/,/g, ''));
+            const inr = Math.round(usd * 83);
+            // Compact: 1k, 1.5L, 1Cr
+            const compact = (val) => {
+                if (val >= 10000000) return `₹${(val/10000000).toFixed(val>=100000000?0:1)}Cr`;
+                if (val >= 100000) return `₹${(val/100000).toFixed(val>=1000000?0:1)}L`;
+                if (val >= 1000) return `₹${(val/1000).toFixed(val>=10000?0:1)}k`;
+                return `₹${val}`;
+            };
+            const period = numMatch[2] ? `/${numMatch[2]}` : (lower.includes('/month') ? '/month' : lower.includes('/year') ? '/year' : lower.includes('exam fee') ? ' (exam fee)' : '');
+            return compact(inr) + period;
+        }
+        return costStr;
+    };
+
     learningGrid.innerHTML = resources.map(resource => {
         const rating = '⭐'.repeat(Math.floor(resource.rating));
         const isFree = resource.cost.toLowerCase().includes('free');
+        const displayCost = isFree ? resource.cost : toINRCost(resource.cost);
 
         return `
             <div class="learning-card" onclick="showResourceDetails('${resource.id}')">
@@ -2100,7 +2215,7 @@ function displayLearningResources(resources) {
                 <p class="learning-card-description">${resource.description}</p>
 
                 <div class="learning-card-footer">
-                    <span class="learning-card-cost ${isFree ? 'free' : ''}">${resource.cost}</span>
+                    <span class="learning-card-cost ${isFree ? 'free' : ''}">${displayCost}</span>
                     <div class="learning-card-actions">
                         <button class="btn btn-secondary btn-sm start-course-btn" data-resource-id="${resource.id}" data-resource-title="${resource.title}">
                             🚀 Start (+25 XP)
@@ -4918,10 +5033,7 @@ function updateProgress(resourceId) {
 }
 
 // Enhanced navigation to load learning resources when section is shown
-const originalShowSection = showSection;
-showSection = function(sectionName) {
-    originalShowSection(sectionName);
-
+function enhanceShowSectionForLearning(sectionName) {
     if (sectionName === 'learning-section') {
         // Show courses tab by default
         showLearningTab('courses');
@@ -4933,7 +5045,7 @@ showSection = function(sectionName) {
             });
         }
     }
-};
+}
 
 // Community Features Functions
 let currentCommunityTab = 'forum';
@@ -5428,11 +5540,8 @@ function showMyConnections() {
     loadUserConnections();
 }
 
-// Enhanced navigation to load community content when section is shown
-const originalShowSection2 = showSection;
-showSection = function(sectionName) {
-    originalShowSection2(sectionName);
-
+// Enhanced navigation to handle community and analytics sections
+function enhanceShowSectionForCommunityAndAnalytics(sectionName) {
     if (sectionName === 'learning-section') {
         showLearningTab('courses');
         if (authManager && authManager.isAuthenticated()) {
@@ -5459,7 +5568,2253 @@ showSection = function(sectionName) {
             });
         }
     }
-};
+}
+
+// Progress Section Functions
+let currentProgressTab = 'overview';
+
+// Show progress tab
+function showProgressTab(tabName) {
+    trackEvent('progress_tab_view', { tab: tabName });
+    currentProgressTab = tabName;
+
+    // Update tab buttons
+    document.querySelectorAll('.progress-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(tabName + 'NavBtn').classList.add('active');
+
+    // Update tab content
+    document.querySelectorAll('.progress-tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById(tabName + 'Content').classList.add('active');
+
+    // Load content based on tab
+    switch(tabName) {
+        case 'overview':
+            updateProgressOverview();
+            break;
+        case 'careers':
+            loadCareerExplorer();
+            break;
+        case 'learning':
+            loadLearningHub();
+            break;
+        case 'community':
+            loadCommunityHub();
+            break;
+    }
+}
+
+// Update progress overview with consolidated analytics
+function updateProgressOverview() {
+    if (!window.MindMateAnalytics) {
+        console.log('Unified analytics not yet initialized, using fallback data');
+        updateProgressWithFallbackData();
+        return;
+    }
+    
+    const analytics = window.MindMateAnalytics.getAnalyticsSummary();
+    const insights = window.MindMateAnalytics.getUserInsights();
+    
+    // Update career readiness score and meter
+    const readinessScore = analytics.careerReadiness || 0;
+    const readinessElement = document.getElementById('careerReadinessScore');
+    if (readinessElement) {
+        readinessElement.textContent = readinessScore;
+        
+        // Update meter circle visual
+        const meterCircle = readinessElement.closest('.meter-circle');
+        if (meterCircle) {
+            const percentage = (readinessScore / 10) * 360;
+            meterCircle.style.background = `conic-gradient(var(--mm-mint) ${percentage}deg, var(--mm-line) ${percentage}deg)`;
+        }
+    }
+    
+    // Update assessment status with enhanced display
+    const assessmentElement = document.getElementById('assessmentStatus');
+    if (assessmentElement) {
+        const status = analytics.assessmentStatus;
+        const statusCircle = assessmentElement.querySelector('.status-circle .status-text');
+        const statusDescription = assessmentElement.querySelector('.status-indicator p');
+        
+        if (statusCircle && statusDescription) {
+            switch(status) {
+                case 'completed':
+                    statusCircle.textContent = '100%';
+                    statusDescription.textContent = 'Assessment completed! View your personalized career insights.';
+                    statusCircle.parentElement.style.background = 'var(--mm-success)';
+                    // Update prediction previews
+                    const successProb = document.getElementById('successProbability');
+                    const growthRate = document.getElementById('growthRate');
+                    if (successProb) successProb.textContent = '85%';
+                    if (growthRate) growthRate.textContent = '+25%';
+                    break;
+                case 'in_progress':
+                    const progress = insights.engagement.assessmentProgress || 0;
+                    statusCircle.textContent = `${Math.round(progress)}%`;
+                    statusDescription.textContent = 'Continue your assessment to unlock career insights.';
+                    statusCircle.parentElement.style.background = 'var(--mm-warning)';
+                    break;
+                default:
+                    statusCircle.textContent = '0%';
+                    statusDescription.textContent = 'Take your career assessment for personalized insights';
+                    statusCircle.parentElement.style.background = 'var(--mm-line)';
+            }
+        }
+    }
+    
+    // Update session analytics
+    const sessionTime = document.getElementById('sessionTime');
+    const actionsCount = document.getElementById('actionsCount');
+    const sectionsExplored = document.getElementById('sectionsExplored');
+    const engagementLevel = document.getElementById('engagementLevel');
+    
+    if (sessionTime) sessionTime.textContent = `${Math.floor(analytics.totalTimeSpent / 60)}m`;
+    if (actionsCount) actionsCount.textContent = insights.engagement.clickCount;
+    if (sectionsExplored) sectionsExplored.textContent = insights.engagement.sectionsExplored;
+    if (engagementLevel) {
+        const engagement = analytics.engagementScore;
+        if (engagement >= 4) engagementLevel.textContent = 'Highly Engaged';
+        else if (engagement >= 2) engagementLevel.textContent = 'Moderately Active';
+        else engagementLevel.textContent = 'Getting Started';
+    }
+    
+    // Update skills progress bars
+    updateSkillsProgress();
+    
+    // Update learning stats
+    updateLearningStats();
+    
+    // Update connections count
+    const connectionsElement = document.getElementById('connectionsCount');
+    if (connectionsElement) {
+        // This would come from actual user data
+        connectionsElement.textContent = '0';
+    }
+    
+    console.log('Progress overview updated with consolidated analytics');
+}
+
+// Fallback function for when analytics system is not ready
+function updateProgressWithFallbackData() {
+    console.log('Using fallback data for progress overview');
+    
+    // Set basic career readiness score
+    const readinessElement = document.getElementById('careerReadinessScore');
+    if (readinessElement) {
+        readinessElement.textContent = '1';
+        
+        // Update meter circle visual with minimal progress
+        const meterCircle = readinessElement.closest('.meter-circle');
+        if (meterCircle) {
+            const percentage = (1 / 10) * 360;
+            meterCircle.style.background = `conic-gradient(var(--mm-mint) ${percentage}deg, var(--mm-line) ${percentage}deg)`;
+        }
+    }
+    
+    // Set basic assessment status
+    const assessmentElement = document.getElementById('assessmentStatus');
+    if (assessmentElement) {
+        const statusCircle = assessmentElement.querySelector('.status-circle .status-text');
+        const statusDescription = assessmentElement.querySelector('.status-indicator p');
+        
+        if (statusCircle && statusDescription) {
+            statusCircle.textContent = '0%';
+            statusDescription.textContent = 'Take your career assessment for personalized insights';
+            statusCircle.parentElement.style.background = 'var(--mm-line)';
+        }
+    }
+    
+    // Set basic session data
+    const sessionTime = document.getElementById('sessionTime');
+    const actionsCount = document.getElementById('actionsCount');
+    const sectionsExplored = document.getElementById('sectionsExplored');
+    const engagementLevel = document.getElementById('engagementLevel');
+    
+    if (sessionTime) sessionTime.textContent = '1m';
+    if (actionsCount) actionsCount.textContent = '0';
+    if (sectionsExplored) sectionsExplored.textContent = '1';
+    if (engagementLevel) engagementLevel.textContent = 'Getting Started';
+    
+    // Update other components with fallback data
+    updateSkillsProgress();
+    updateLearningStats();
+    
+    // Set connections to 0
+    const connectionsElement = document.getElementById('connectionsCount');
+    if (connectionsElement) {
+        connectionsElement.textContent = '0';
+    }
+    
+    console.log('Fallback data loaded - Career Readiness should now display');
+    
+    // Try to update again in 2 seconds when analytics might be ready
+    setTimeout(() => {
+        if (window.MindMateAnalytics) {
+            console.log('Analytics now available, updating with real data');
+            updateProgressOverview();
+        }
+    }, 2000);
+}
+
+// TEST FUNCTION - Call testCareerReadiness() in console to debug
+function testCareerReadiness() {
+    console.log('🧪 Testing Career Readiness loading...');
+    console.log('Analytics available:', !!window.MindMateAnalytics);
+    
+    const readinessElement = document.getElementById('careerReadinessScore');
+    console.log('Readiness element found:', !!readinessElement);
+    
+    if (readinessElement) {
+        console.log('Current readiness text:', readinessElement.textContent);
+    }
+    
+    console.log('Forcing progress overview update...');
+    updateProgressOverview();
+    
+    console.log('If Career Readiness still shows loading, check console for errors');
+}
+
+// Update skills progress visualization
+function updateSkillsProgress() {
+    // Get user's skill data (mock data for now, would come from user profile)
+    const skillsData = {
+        technical: 70,
+        soft: 65
+    };
+    
+    const technicalBar = document.getElementById('technicalSkillsBar');
+    const softBar = document.getElementById('softSkillsBar');
+    
+    if (technicalBar) {
+        technicalBar.style.width = `${skillsData.technical}%`;
+        const percentElement = technicalBar.closest('.skill-category').querySelector('.skill-percent');
+        if (percentElement) percentElement.textContent = `${skillsData.technical}%`;
+    }
+    
+    if (softBar) {
+        softBar.style.width = `${skillsData.soft}%`;
+        const percentElement = softBar.closest('.skill-category').querySelector('.skill-percent');
+        if (percentElement) percentElement.textContent = `${skillsData.soft}%`;
+    }
+    
+    // Update breakdown items
+    const assessmentProgress = document.getElementById('assessmentProgress');
+    const skillsProgress = document.getElementById('skillsProgress');
+    const experienceProgress = document.getElementById('experienceProgress');
+    
+    if (assessmentProgress) assessmentProgress.style.width = '0%'; // Will be updated when assessment is taken
+    if (skillsProgress) skillsProgress.style.width = `${(skillsData.technical + skillsData.soft) / 2}%`;
+    if (experienceProgress) experienceProgress.style.width = '20%'; // Mock data
+}
+
+// Update learning statistics
+function updateLearningStats() {
+    // Get learning data from local storage or API
+    const learningData = {
+        coursesCompleted: 0,
+        skillsLearned: 0,
+        hoursSpent: 0
+    };
+    
+    // Try to get actual data from gamification or learning progress
+    if (typeof getGameProfile === 'function') {
+        try {
+            const gameProfile = getGameProfile();
+            if (gameProfile) {
+                learningData.coursesCompleted = gameProfile.courses_completed || 0;
+                learningData.hoursSpent = Math.floor((gameProfile.total_xp || 0) / 10); // Rough conversion
+            }
+        } catch (e) {
+            console.log('Could not load game profile for learning stats');
+        }
+    }
+    
+    const coursesElement = document.getElementById('coursesCompleted');
+    const skillsElement = document.getElementById('skillsLearned');
+    const hoursElement = document.getElementById('hoursSpent');
+    
+    if (coursesElement) coursesElement.textContent = learningData.coursesCompleted;
+    if (skillsElement) skillsElement.textContent = learningData.skillsLearned;
+    if (hoursElement) hoursElement.textContent = `${learningData.hoursSpent}h`;
+}
+
+// Generate simplified career report (replaces complex reports tab)
+function generateCareerReport() {
+    console.log('Enhanced generateCareerReport called');
+    
+    if (!window.MindMateAnalytics) {
+        console.log('Showing enhanced career assessment required modal');
+        showReportModal('Comprehensive Career Analysis', `
+            <div class="report-content">
+                <div class="report-header">
+                    <h3>📊 Career Assessment Required</h3>
+                    <p class="report-subtitle">Unlock Your Career Potential</p>
+                </div>
+                <div class="report-body">
+                    <div class="assessment-preview">
+                        <div class="preview-icon">🔮</div>
+                        <p>To generate your comprehensive career analysis, please complete your career assessment first. This detailed report will include:</p>
+                    </div>
+                    
+                    <div class="feature-preview">
+                        <div class="preview-grid">
+                            <div class="preview-item">
+                                <span class="preview-emoji">🎯</span>
+                                <strong>Career Match Analysis</strong>
+                                <small>Discover careers that align with your personality, skills, and interests</small>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-emoji">📈</span>
+                                <strong>Market Insights</strong>
+                                <small>Current demand, salary ranges, and growth projections</small>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-emoji">🛣️</span>
+                                <strong>Career Roadmap</strong>
+                                <small>Personalized step-by-step path to your ideal career</small>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-emoji">🎓</span>
+                                <strong>Skill Gap Analysis</strong>
+                                <small>Identify what you need to learn and where to learn it</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="assessment-stats">
+                        <h4>📊 Assessment Benefits:</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number">12</span>
+                                <span class="stat-label">Comprehensive Questions</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">25+</span>
+                                <span class="stat-label">Career Matches</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">5-7</span>
+                                <span class="stat-label">Minutes to Complete</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="closeReportModal(); showSection('quiz-section');">🚀 Take Assessment Now</button>
+                        <button class="btn btn-secondary" onclick="closeReportModal(); showSection('hero');">📖 Learn More</button>
+                    </div>
+                </div>
+            </div>
+        `);
+        return;
+    }
+    
+    const analytics = window.MindMateAnalytics.getAnalyticsSummary();
+    const insights = window.MindMateAnalytics.getUserInsights();
+    const currentDate = new Date();
+    
+    // Enhanced career data simulation
+    const careerData = {
+        topMatches: [
+            { name: 'Data Scientist', match: 92, growth: 'High', salary: '₹12-25L' },
+            { name: 'Product Manager', match: 88, growth: 'Very High', salary: '₹15-35L' },
+            { name: 'UX Designer', match: 85, growth: 'High', salary: '₹8-18L' },
+            { name: 'Software Engineer', match: 82, growth: 'High', salary: '₹10-22L' },
+            { name: 'Business Analyst', match: 79, growth: 'Medium', salary: '₹7-15L' }
+        ],
+        personalityType: 'Analytical Innovator',
+        strengths: ['Problem Solving', 'Technical Skills', 'Analytical Thinking', 'Communication'],
+        industries: ['Technology', 'Healthcare', 'Finance', 'Education'],
+        workStyle: 'Hybrid (Remote + Office)',
+        careerStage: 'Early Professional'
+    };
+    
+    const reportContent = `
+        <div class="report-content">
+            <div class="report-header">
+                <h3>📊 Comprehensive Career Analysis</h3>
+                <p class="report-date">Generated on ${currentDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div class="report-id">Report ID: CA-${Date.now().toString(36).toUpperCase()}</div>
+            </div>
+            
+            <div class="report-body">
+                <!-- Executive Summary -->
+                <div class="executive-summary">
+                    <h4>🎯 Executive Summary</h4>
+                    <div class="summary-card">
+                        <p>Based on your comprehensive assessment, you show strong alignment with <strong>analytical and innovative roles</strong> in the technology sector. Your top career match is <strong>Data Scientist</strong> with a 92% compatibility score.</p>
+                    </div>
+                </div>
+                
+                <!-- Key Metrics -->
+                <div class="metric-grid">
+                    <div class="metric-card highlight">
+                        <div class="metric-value">${analytics.careerReadiness}/10</div>
+                        <div class="metric-label">Career Readiness Score</div>
+                        <div class="metric-trend">↗️ Improving</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${Math.floor(analytics.totalTimeSpent/60)}min</div>
+                        <div class="metric-label">Assessment Time</div>
+                        <div class="metric-trend">⏱️ Thorough</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${careerData.topMatches.length}</div>
+                        <div class="metric-label">Career Matches</div>
+                        <div class="metric-trend">🎯 Diverse</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">${careerData.topMatches[0].match}%</div>
+                        <div class="metric-label">Best Match</div>
+                        <div class="metric-trend">🌟 Excellent</div>
+                    </div>
+                </div>
+                
+                <!-- Top Career Matches -->
+                <div class="career-matches-section">
+                    <h4>🚀 Top Career Matches</h4>
+                    <div class="matches-list">
+                        ${careerData.topMatches.map((career, index) => `
+                            <div class="match-item ${index < 2 ? 'featured' : ''}">
+                                <div class="match-header">
+                                    <span class="match-rank">#${index + 1}</span>
+                                    <h5>${career.name}</h5>
+                                    <span class="match-score">${career.match}%</span>
+                                </div>
+                                <div class="match-details">
+                                    <span class="match-tag salary">💰 ${career.salary}</span>
+                                    <span class="match-tag growth">📈 ${career.growth} Growth</span>
+                                </div>
+                                <div class="match-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${career.match}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Personality & Strengths -->
+                <div class="personality-section">
+                    <h4>🧠 Your Professional Profile</h4>
+                    <div class="profile-grid">
+                        <div class="profile-card">
+                            <h5>Personality Type</h5>
+                            <div class="personality-badge">${careerData.personalityType}</div>
+                            <p>You thrive in environments that combine analytical thinking with creative problem-solving.</p>
+                        </div>
+                        <div class="profile-card">
+                            <h5>Core Strengths</h5>
+                            <div class="strengths-list">
+                                ${careerData.strengths.map(strength => `<span class="strength-tag">${strength}</span>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Market Analysis -->
+                <div class="market-analysis">
+                    <h4>📈 Market Insights</h4>
+                    <div class="insights-grid">
+                        <div class="insight-card">
+                            <span class="insight-icon">🏭</span>
+                            <h5>Hot Industries</h5>
+                            <div class="industry-tags">
+                                ${careerData.industries.map(industry => `<span class="industry-tag">${industry}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <span class="insight-icon">🏠</span>
+                            <h5>Work Style</h5>
+                            <p>${careerData.workStyle}</p>
+                            <small>Based on your preferences and market trends</small>
+                        </div>
+                        <div class="insight-card">
+                            <span class="insight-icon">📊</span>
+                            <h5>Career Stage</h5>
+                            <p>${careerData.careerStage}</p>
+                            <small>Focused on skill building and exploration</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Plan -->
+                <div class="action-plan">
+                    <h4>🎯 Recommended Action Plan</h4>
+                    <div class="timeline-plan">
+                        <div class="plan-phase">
+                            <div class="phase-header">
+                                <span class="phase-number">1</span>
+                                <h5>Next 30 Days - Foundation</h5>
+                            </div>
+                            <ul class="phase-actions">
+                                <li>Explore detailed career information for your top 3 matches</li>
+                                <li>Complete skill assessments in your areas of interest</li>
+                                <li>Connect with professionals in your target fields</li>
+                            </ul>
+                        </div>
+                        <div class="plan-phase">
+                            <div class="phase-header">
+                                <span class="phase-number">2</span>
+                                <h5>Next 90 Days - Skill Building</h5>
+                            </div>
+                            <ul class="phase-actions">
+                                <li>Start learning courses for your top career choice</li>
+                                <li>Build a portfolio or work on relevant projects</li>
+                                <li>Join professional communities and forums</li>
+                            </ul>
+                        </div>
+                        <div class="plan-phase">
+                            <div class="phase-header">
+                                <span class="phase-number">3</span>
+                                <h5>Next 6 Months - Application</h5>
+                            </div>
+                            <ul class="phase-actions">
+                                <li>Apply for internships or entry-level positions</li>
+                                <li>Attend industry events and networking sessions</li>
+                                <li>Seek mentorship and guidance from experts</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="closeReportModal(); showProgressTab('careers');">🔍 Explore Career Details</button>
+                    <button class="btn btn-secondary" onclick="closeReportModal(); showProgressTab('learning');">📚 Start Learning Path</button>
+                    <button class="btn btn-outline" onclick="closeReportModal(); showSection('community-section');">👥 Find Mentors</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    showReportModal('Comprehensive Career Analysis', reportContent);
+}
+
+// Generate skills analysis report
+function generateSkillsReport() {
+    console.log('Enhanced generateSkillsReport called');
+    
+    // Enhanced skills data with more detailed analysis
+    const skillsData = {
+        technical: { current: 70, target: 85, trend: '+12%' },
+        soft: { current: 65, target: 80, trend: '+8%' },
+        leadership: { current: 45, target: 70, trend: '+15%' },
+        communication: { current: 60, target: 75, trend: '+10%' },
+        problemSolving: { current: 75, target: 88, trend: '+5%' },
+        creativity: { current: 55, target: 72, trend: '+18%' },
+        dataAnalysis: { current: 68, target: 85, trend: '+20%' },
+        projectManagement: { current: 52, target: 75, trend: '+25%' }
+    };
+    
+    const skillCategories = {
+        'Core Technical Skills': ['technical', 'dataAnalysis', 'problemSolving'],
+        'Professional Skills': ['communication', 'leadership', 'projectManagement'],
+        'Creative & Innovation': ['creativity', 'soft']
+    };
+    
+    const overallProgress = Math.round(
+        Object.values(skillsData).reduce((sum, skill) => sum + skill.current, 0) / Object.keys(skillsData).length
+    );
+    
+    const strengthAreas = Object.entries(skillsData)
+        .filter(([_, data]) => data.current >= 65)
+        .map(([skill, _]) => skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()))
+        .slice(0, 3);
+        
+    const growthAreas = Object.entries(skillsData)
+        .filter(([_, data]) => data.current < 65)
+        .sort(([_, a], [__, b]) => (b.target - b.current) - (a.target - a.current))
+        .map(([skill, _]) => skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()))
+        .slice(0, 3);
+    
+    const reportContent = `
+        <div class="report-content">
+            <div class="report-header">
+                <h3>📈 Comprehensive Skills Analysis</h3>
+                <p class="report-date">Generated on ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div class="report-id">Report ID: SA-${Date.now().toString(36).toUpperCase()}</div>
+            </div>
+            
+            <div class="report-body">
+                <!-- Skills Overview -->
+                <div class="skills-overview-enhanced">
+                    <div class="overall-score-enhanced">
+                        <div class="score-circle-large">
+                            <div class="score-value-large">${overallProgress}%</div>
+                            <div class="score-label-large">Overall Skills Level</div>
+                        </div>
+                        <div class="score-insights">
+                            <div class="insight-item positive">
+                                <span class="insight-icon">📈</span>
+                                <span>Above Average Performance</span>
+                            </div>
+                            <div class="insight-item">
+                                <span class="insight-icon">🎯</span>
+                                <span>Strong Foundation Established</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Skills by Category -->
+                <div class="skills-categories">
+                    <h4>📊 Skills Breakdown by Category</h4>
+                    ${Object.entries(skillCategories).map(([category, skills]) => {
+                        const categoryAvg = Math.round(
+                            skills.reduce((sum, skill) => sum + skillsData[skill].current, 0) / skills.length
+                        );
+                        return `
+                            <div class="category-section">
+                                <div class="category-header">
+                                    <h5>${category}</h5>
+                                    <span class="category-score">${categoryAvg}%</span>
+                                </div>
+                                <div class="category-skills">
+                                    ${skills.map(skill => {
+                                        const skillData = skillsData[skill];
+                                        const displayName = skill.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                                        const gap = skillData.target - skillData.current;
+                                        return `
+                                            <div class="skill-item-enhanced">
+                                                <div class="skill-header">
+                                                    <span class="skill-name">${displayName}</span>
+                                                    <div class="skill-metrics">
+                                                        <span class="skill-current">${skillData.current}%</span>
+                                                        <span class="skill-target">Target: ${skillData.target}%</span>
+                                                        <span class="skill-trend ${skillData.trend.startsWith('+') ? 'positive' : 'neutral'}">${skillData.trend}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="skill-progress-enhanced">
+                                                    <div class="progress-track">
+                                                        <div class="progress-current" style="width: ${skillData.current}%"></div>
+                                                        <div class="progress-target" style="left: ${skillData.target}%"></div>
+                                                    </div>
+                                                    <div class="progress-labels">
+                                                        <span class="label-current">Current</span>
+                                                        <span class="label-gap">${gap}% gap</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                
+                <!-- Strength & Growth Areas -->
+                <div class="strengths-growth">
+                    <div class="strengths-section">
+                        <h4>🌟 Your Strongest Areas</h4>
+                        <div class="strength-cards">
+                            ${strengthAreas.map((skill, index) => `
+                                <div class="strength-card">
+                                    <div class="strength-rank">#${index + 1}</div>
+                                    <div class="strength-content">
+                                        <h5>${skill}</h5>
+                                        <p>You excel in this area - leverage this strength!</p>
+                                    </div>
+                                    <div class="strength-badge">Strong</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="growth-section">
+                        <h4>🚀 Priority Growth Areas</h4>
+                        <div class="growth-cards">
+                            ${growthAreas.map((skill, index) => `
+                                <div class="growth-card">
+                                    <div class="growth-priority">Priority ${index + 1}</div>
+                                    <div class="growth-content">
+                                        <h5>${skill}</h5>
+                                        <p>High impact opportunity for career advancement</p>
+                                    </div>
+                                    <div class="growth-badge">Focus</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Learning Recommendations -->
+                <div class="learning-recommendations">
+                    <h4>🎯 Personalized Learning Path</h4>
+                    <div class="learning-phases">
+                        <div class="learning-phase">
+                            <div class="phase-header">
+                                <span class="phase-icon">🚀</span>
+                                <h5>Phase 1: Foundation (Next 4 weeks)</h5>
+                            </div>
+                            <div class="phase-content">
+                                <div class="recommended-courses">
+                                    <div class="course-item">
+                                        <span class="course-platform">Coursera</span>
+                                        <span class="course-title">Python for Data Science</span>
+                                        <span class="course-duration">6 weeks</span>
+                                    </div>
+                                    <div class="course-item">
+                                        <span class="course-platform">LinkedIn Learning</span>
+                                        <span class="course-title">Effective Communication</span>
+                                        <span class="course-duration">2 weeks</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="learning-phase">
+                            <div class="phase-header">
+                                <span class="phase-icon">💪</span>
+                                <h5>Phase 2: Intermediate (Next 8 weeks)</h5>
+                            </div>
+                            <div class="phase-content">
+                                <div class="recommended-courses">
+                                    <div class="course-item">
+                                        <span class="course-platform">Udacity</span>
+                                        <span class="course-title">Data Analyst Nanodegree</span>
+                                        <span class="course-duration">4 months</span>
+                                    </div>
+                                    <div class="course-item">
+                                        <span class="course-platform">edX</span>
+                                        <span class="course-title">Project Management Fundamentals</span>
+                                        <span class="course-duration">6 weeks</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="learning-phase">
+                            <div class="phase-header">
+                                <span class="phase-icon">🎆</span>
+                                <h5>Phase 3: Advanced (Next 12 weeks)</h5>
+                            </div>
+                            <div class="phase-content">
+                                <div class="recommended-courses">
+                                    <div class="course-item">
+                                        <span class="course-platform">Specialization</span>
+                                        <span class="course-title">Machine Learning Engineering</span>
+                                        <span class="course-duration">3 months</span>
+                                    </div>
+                                    <div class="course-item">
+                                        <span class="course-platform">Industry Project</span>
+                                        <span class="course-title">Leadership & Team Management</span>
+                                        <span class="course-duration">Ongoing</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Success Metrics -->
+                <div class="success-metrics">
+                    <h4>📉 Track Your Progress</h4>
+                    <div class="metrics-grid">
+                        <div class="metric-target">
+                            <div class="metric-icon">🎯</div>
+                            <div class="metric-info">
+                                <h5>90-Day Goal</h5>
+                                <p>Increase overall skills by 15%</p>
+                                <div class="metric-progress">
+                                    <div class="progress-bar"><div class="progress-fill" style="width: 25%"></div></div>
+                                    <span class="progress-text">25% towards goal</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-target">
+                            <div class="metric-icon">📚</div>
+                            <div class="metric-info">
+                                <h5>Learning Target</h5>
+                                <p>Complete 3 courses this quarter</p>
+                                <div class="metric-progress">
+                                    <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+                                    <span class="progress-text">Ready to start!</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="metric-target">
+                            <div class="metric-icon">🎆</div>
+                            <div class="metric-info">
+                                <h5>Skill Certification</h5>
+                                <p>Earn 2 professional certificates</p>
+                                <div class="metric-progress">
+                                    <div class="progress-bar"><div class="progress-fill" style="width: 0%"></div></div>
+                                    <span class="progress-text">Plan in progress</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="closeReportModal(); showProgressTab('learning');">🚀 Start Learning Path</button>
+                    <button class="btn btn-secondary" onclick="closeReportModal(); showSection('community-section');">👥 Find Study Partners</button>
+                    <button class="btn btn-outline" onclick="closeReportModal(); generateProgressReport();">📊 View Progress Report</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    showReportModal('Comprehensive Skills Analysis', reportContent);
+}
+
+// Generate progress report
+function generateProgressReport() {
+    console.log('Enhanced generateProgressReport called');
+    
+    const analytics = window.MindMateAnalytics ? window.MindMateAnalytics.getAnalyticsSummary() : null;
+    const currentDate = new Date();
+    
+    // Enhanced progress data
+    const progressData = {
+        sessionsCompleted: 12,
+        totalTimeSpent: analytics ? analytics.totalTimeSpent : 45,
+        assessmentProgress: 85,
+        learningModules: 7,
+        skillsImproved: 4,
+        milestonesAchieved: 3,
+        streakDays: 5,
+        pointsEarned: 2450,
+        level: 3,
+        nextLevelPoints: 750,
+        badges: [
+            { name: 'First Steps', icon: '🎆', earned: true },
+            { name: 'Assessment Pro', icon: '🎯', earned: true },
+            { name: 'Learning Enthusiast', icon: '📚', earned: true },
+            { name: 'Skill Builder', icon: '💡', earned: false },
+            { name: 'Community Member', icon: '👥', earned: false }
+        ],
+        weeklyGoals: {
+            completed: 3,
+            total: 5,
+            goals: [
+                { name: 'Complete career assessment', status: 'completed' },
+                { name: 'Explore 3 career paths', status: 'completed' },
+                { name: 'Start learning path', status: 'completed' },
+                { name: 'Connect with mentor', status: 'in-progress' },
+                { name: 'Join community discussion', status: 'pending' }
+            ]
+        },
+        recentActivities: [
+            { action: 'Completed Skills Assessment', time: '2 hours ago', points: 150 },
+            { action: 'Explored Data Science career path', time: '1 day ago', points: 100 },
+            { action: 'Started Python course', time: '2 days ago', points: 200 },
+            { action: 'Updated career profile', time: '3 days ago', points: 75 },
+            { action: 'Joined MindMate community', time: '5 days ago', points: 125 }
+        ]
+    };
+    
+    if (analytics) {
+        const reportContent = `
+            <div class="report-content">
+                <div class="report-header">
+                    <h3>📉 Comprehensive Progress Report</h3>
+                    <p class="report-date">Generated on ${currentDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <div class="report-id">Report ID: PR-${Date.now().toString(36).toUpperCase()}</div>
+                </div>
+                
+                <div class="report-body">
+                    <!-- Progress Overview -->
+                    <div class="progress-overview">
+                        <div class="level-section">
+                            <div class="level-display">
+                                <div class="level-badge">Level ${progressData.level}</div>
+                                <div class="level-progress">
+                                    <div class="xp-bar">
+                                        <div class="xp-fill" style="width: ${(progressData.pointsEarned % 1000) / 10}%"></div>
+                                    </div>
+                                    <div class="xp-text">${progressData.pointsEarned} XP | ${progressData.nextLevelPoints} to next level</div>
+                                </div>
+                            </div>
+                            <div class="streak-display">
+                                <div class="streak-icon">🔥</div>
+                                <div class="streak-info">
+                                    <div class="streak-number">${progressData.streakDays}</div>
+                                    <div class="streak-label">Day Streak</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Key Metrics Dashboard -->
+                    <div class="metrics-dashboard">
+                        <div class="dashboard-grid">
+                            <div class="metric-card-enhanced highlight">
+                                <div class="metric-icon">🕰️</div>
+                                <div class="metric-content">
+                                    <div class="metric-value">${Math.floor(progressData.totalTimeSpent/60)} hrs</div>
+                                    <div class="metric-label">Learning Time</div>
+                                    <div class="metric-change positive">↑ +25% this week</div>
+                                </div>
+                            </div>
+                            <div class="metric-card-enhanced">
+                                <div class="metric-icon">🎯</div>
+                                <div class="metric-content">
+                                    <div class="metric-value">${progressData.assessmentProgress}%</div>
+                                    <div class="metric-label">Assessment Complete</div>
+                                    <div class="metric-change positive">↑ +15% progress</div>
+                                </div>
+                            </div>
+                            <div class="metric-card-enhanced">
+                                <div class="metric-icon">📚</div>
+                                <div class="metric-content">
+                                    <div class="metric-value">${progressData.learningModules}</div>
+                                    <div class="metric-label">Modules Explored</div>
+                                    <div class="metric-change neutral">2 in progress</div>
+                                </div>
+                            </div>
+                            <div class="metric-card-enhanced">
+                                <div class="metric-icon">💡</div>
+                                <div class="metric-content">
+                                    <div class="metric-value">${progressData.skillsImproved}</div>
+                                    <div class="metric-label">Skills Improved</div>
+                                    <div class="metric-change positive">↑ +2 this month</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Goals Progress -->
+                    <div class="weekly-goals">
+                        <h4>🎯 Weekly Goals Progress</h4>
+                        <div class="goals-overview">
+                            <div class="goals-circle">
+                                <div class="goals-progress">
+                                    <div class="goals-number">${progressData.weeklyGoals.completed}/${progressData.weeklyGoals.total}</div>
+                                    <div class="goals-label">Goals Completed</div>
+                                </div>
+                            </div>
+                            <div class="goals-breakdown">
+                                ${progressData.weeklyGoals.goals.map(goal => `
+                                    <div class="goal-item ${goal.status}">
+                                        <div class="goal-status-icon">
+                                            ${goal.status === 'completed' ? '✓' : goal.status === 'in-progress' ? '🔄' : '⏳'}
+                                        </div>
+                                        <div class="goal-content">
+                                            <span class="goal-name">${goal.name}</span>
+                                            <span class="goal-status-text">${goal.status.replace('-', ' ')}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Achievement Badges -->
+                    <div class="achievements-section">
+                        <h4>🎆 Achievement Badges</h4>
+                        <div class="badges-grid">
+                            ${progressData.badges.map(badge => `
+                                <div class="badge-item ${badge.earned ? 'earned' : 'locked'}">
+                                    <div class="badge-icon">${badge.icon}</div>
+                                    <div class="badge-name">${badge.name}</div>
+                                    ${badge.earned ? 
+                                        '<div class="badge-status earned">Earned!</div>' : 
+                                        '<div class="badge-status locked">Keep going!</div>'
+                                    }
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Journey Timeline -->
+                    <div class="journey-section">
+                        <h4>🚀 Your Learning Journey</h4>
+                        <div class="timeline-enhanced">
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h5>🎉 Welcome to MindMate</h5>
+                                    <p>Started your career discovery journey</p>
+                                    <span class="timeline-date">5 days ago</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h5>📝 Completed Profile Setup</h5>
+                                    <p>Added personal information and preferences</p>
+                                    <span class="timeline-date">4 days ago</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h5>🎯 Assessment Progress</h5>
+                                    <p>Made significant progress on career assessment (85% complete)</p>
+                                    <span class="timeline-date">2 days ago</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item current">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h5>📚 Active Learning Phase</h5>
+                                    <p>Exploring career paths and building skills</p>
+                                    <span class="timeline-date">Current</span>
+                                </div>
+                            </div>
+                            <div class="timeline-item upcoming">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h5>🎓 Skill Certification</h5>
+                                    <p>Complete first professional certification</p>
+                                    <span class="timeline-date">Next milestone</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity Feed -->
+                    <div class="activity-feed">
+                        <h4>📰 Recent Activity</h4>
+                        <div class="activity-list">
+                            ${progressData.recentActivities.map(activity => `
+                                <div class="activity-item">
+                                    <div class="activity-icon">🎯</div>
+                                    <div class="activity-content">
+                                        <div class="activity-action">${activity.action}</div>
+                                        <div class="activity-time">${activity.time}</div>
+                                    </div>
+                                    <div class="activity-points">+${activity.points} XP</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Insights -->
+                    <div class="insights-section">
+                        <h4>📈 Performance Insights</h4>
+                        <div class="insights-grid">
+                            <div class="insight-card positive">
+                                <div class="insight-header">
+                                    <span class="insight-icon">📈</span>
+                                    <h5>Strong Progress</h5>
+                                </div>
+                                <p>You're 25% ahead of typical users at your stage. Keep up the excellent momentum!</p>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-header">
+                                    <span class="insight-icon">🎯</span>
+                                    <h5>Assessment Focus</h5>
+                                </div>
+                                <p>Complete your assessment to unlock personalized career recommendations and detailed skill analysis.</p>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-header">
+                                    <span class="insight-icon">👥</span>
+                                    <h5>Community Engagement</h5>
+                                </div>
+                                <p>Join discussions and connect with mentors to accelerate your career growth by 40%.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Next Steps Recommendations -->
+                    <div class="next-steps-enhanced">
+                        <h4>🚀 Recommended Next Steps</h4>
+                        <div class="steps-container">
+                            <div class="step-item priority">
+                                <div class="step-header">
+                                    <span class="step-number">1</span>
+                                    <h5>Complete Career Assessment</h5>
+                                    <span class="step-badge priority">High Priority</span>
+                                </div>
+                                <p>Finish the remaining 15% to unlock your complete career profile and personalized recommendations.</p>
+                                <div class="step-action">
+                                    <button class="btn btn-small btn-primary" onclick="closeReportModal(); showSection('quiz-section');">Continue Assessment</button>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-header">
+                                    <span class="step-number">2</span>
+                                    <h5>Start Targeted Learning</h5>
+                                    <span class="step-badge">Recommended</span>
+                                </div>
+                                <p>Begin your first course in your top-matched career area to build relevant skills.</p>
+                                <div class="step-action">
+                                    <button class="btn btn-small btn-secondary" onclick="closeReportModal(); showProgressTab('learning');">Explore Courses</button>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-header">
+                                    <span class="step-number">3</span>
+                                    <h5>Connect with Community</h5>
+                                    <span class="step-badge">Optional</span>
+                                </div>
+                                <p>Join discussions and find mentors to get insights from industry professionals.</p>
+                                <div class="step-action">
+                                    <button class="btn btn-small btn-outline" onclick="closeReportModal(); showSection('community-section');">Join Community</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="closeReportModal(); showSection('quiz-section');">🎯 Continue Assessment</button>
+                        <button class="btn btn-secondary" onclick="closeReportModal(); generateCareerReport();">📊 View Career Analysis</button>
+                        <button class="btn btn-outline" onclick="closeReportModal(); showProgressTab('careers');">🔍 Explore Careers</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        showReportModal('Comprehensive Progress Report', reportContent);
+    } else {
+        const reportContent = `
+            <div class="report-content">
+                <div class="report-header">
+                    <h3>📉 Welcome Progress Report</h3>
+                    <p class="report-date">Generated on ${currentDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    <div class="report-id">Report ID: PR-WELCOME-${Date.now().toString(36).toUpperCase()}</div>
+                </div>
+                
+                <div class="report-body">
+                    <div class="welcome-section">
+                        <div class="welcome-hero">
+                            <div class="welcome-icon">🌟</div>
+                            <h4>Welcome to Your Career Journey!</h4>
+                            <p>You're just getting started, and that's the most exciting part. Every expert was once a beginner.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="starter-status">
+                        <h4>📈 Your Current Status</h4>
+                        <div class="status-grid">
+                            <div class="status-card">
+                                <div class="status-icon">🚀</div>
+                                <div class="status-content">
+                                    <h5>Journey Status</h5>
+                                    <p>Ready to Launch</p>
+                                    <small>You've taken the first step by joining MindMate</small>
+                                </div>
+                            </div>
+                            <div class="status-card">
+                                <div class="status-icon">🎯</div>
+                                <div class="status-content">
+                                    <h5>Assessment</h5>
+                                    <p>Ready to Begin</p>
+                                    <small>Complete your assessment to unlock insights</small>
+                                </div>
+                            </div>
+                            <div class="status-card">
+                                <div class="status-icon">💡</div>
+                                <div class="status-content">
+                                    <h5>Career Focus</h5>
+                                    <p>Exploring Options</p>
+                                    <small>Discover what excites you most</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="getting-started-guide">
+                        <h4>🚀 Your 30-Day Success Plan</h4>
+                        <div class="plan-phases">
+                            <div class="plan-phase">
+                                <div class="phase-header">
+                                    <span class="phase-icon">🔍</span>
+                                    <h5>Week 1: Discovery</h5>
+                                </div>
+                                <ul class="phase-tasks">
+                                    <li>Complete your comprehensive career assessment</li>
+                                    <li>Explore your top 3 career matches</li>
+                                    <li>Set up your learning preferences</li>
+                                </ul>
+                            </div>
+                            <div class="plan-phase">
+                                <div class="phase-header">
+                                    <span class="phase-icon">📚</span>
+                                    <h5>Week 2-3: Learning</h5>
+                                </div>
+                                <ul class="phase-tasks">
+                                    <li>Start your first recommended course</li>
+                                    <li>Connect with industry professionals</li>
+                                    <li>Join relevant community discussions</li>
+                                </ul>
+                            </div>
+                            <div class="plan-phase">
+                                <div class="phase-header">
+                                    <span class="phase-icon">🎯</span>
+                                    <h5>Week 4: Planning</h5>
+                                </div>
+                                <ul class="phase-tasks">
+                                    <li>Create your 6-month career roadmap</li>
+                                    <li>Identify skill gaps and learning priorities</li>
+                                    <li>Set measurable career goals</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="motivation-boost">
+                        <div class="boost-card">
+                            <div class="boost-icon">🎆</div>
+                            <div class="boost-content">
+                                <h5>Did You Know?</h5>
+                                <p>Users who complete their assessment within the first week are <strong>3x more likely</strong> to find their ideal career path within 6 months!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-wins">
+                        <h4>⚡ Quick Wins to Get Started</h4>
+                        <div class="wins-grid">
+                            <div class="win-item">
+                                <div class="win-icon">🎯</div>
+                                <div class="win-content">
+                                    <h5>Take the Assessment</h5>
+                                    <p>5-7 minutes to unlock your career insights</p>
+                                    <div class="win-reward">Reward: +500 XP + First Badge</div>
+                                </div>
+                            </div>
+                            <div class="win-item">
+                                <div class="win-icon">🔍</div>
+                                <div class="win-content">
+                                    <h5>Explore 3 Careers</h5>
+                                    <p>Browse our comprehensive career database</p>
+                                    <div class="win-reward">Reward: +200 XP + Explorer Badge</div>
+                                </div>
+                            </div>
+                            <div class="win-item">
+                                <div class="win-icon">👥</div>
+                                <div class="win-content">
+                                    <h5>Join the Community</h5>
+                                    <p>Connect with peers and mentors</p>
+                                    <div class="win-reward">Reward: +150 XP + Community Badge</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="closeReportModal(); showSection('quiz-section');">🚀 Start Assessment</button>
+                        <button class="btn btn-secondary" onclick="closeReportModal(); showProgressTab('careers');">🔍 Explore Careers</button>
+                        <button class="btn btn-outline" onclick="closeReportModal(); showSection('hero');">📖 Learn More</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        showReportModal('Welcome Progress Report', reportContent);
+    }
+}
+
+// Modal functions for enhanced reports
+function showReportModal(title, content) {
+    console.log('showReportModal called with title:', title);
+    console.log('Modal content length:', content.length);
+    
+    // Remove any existing modal
+    const existingModal = document.getElementById('reportModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'reportModal';
+    modal.className = 'report-modal';
+    modal.innerHTML = `
+        <div class="report-modal-overlay" onclick="closeReportModal()"></div>
+        <div class="report-modal-content">
+            <div class="report-modal-header">
+                <h2>${title}</h2>
+                <button class="report-modal-close" onclick="closeReportModal()">&times;</button>
+            </div>
+            <div class="report-modal-body">
+                ${content}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add styles if not already present
+    if (!document.getElementById('reportModalStyles')) {
+        const styles = document.createElement('style');
+        styles.id = 'reportModalStyles';
+        styles.textContent = `
+            .report-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .report-modal-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(4px);
+            }
+            
+            .report-modal-content {
+                position: relative;
+                background: var(--mm-surface);
+                border-radius: 1rem;
+                max-width: 600px;
+                max-height: 80vh;
+                width: 90%;
+                overflow-y: auto;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                border: 1px solid var(--mm-line);
+            }
+            
+            .report-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--mm-line);
+            }
+            
+            .report-modal-header h2 {
+                margin: 0;
+                color: var(--mm-mint);
+                font-size: 1.5rem;
+            }
+            
+            .report-modal-close {
+                background: transparent;
+                border: none;
+                font-size: 2rem;
+                color: var(--mm-text-muted);
+                cursor: pointer;
+                padding: 0;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 0.5rem;
+                transition: all 0.3s ease;
+            }
+            
+            .report-modal-close:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: var(--foreground);
+            }
+            
+            .report-modal-body {
+                padding: 1.5rem;
+            }
+            
+            .report-content {
+                color: var(--foreground);
+            }
+            
+            .report-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .report-header h3 {
+                margin: 0 0 0.5rem 0;
+                color: var(--mm-mint);
+                font-size: 1.4rem;
+            }
+            
+            .report-date {
+                color: var(--mm-text-muted);
+                font-size: 0.9rem;
+                margin: 0;
+            }
+            
+            .metric-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .metric-card {
+                background: var(--mm-surface-dark);
+                padding: 1rem;
+                border-radius: 0.75rem;
+                text-align: center;
+                border: 1px solid var(--mm-line);
+            }
+            
+            .metric-value {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: var(--mm-mint);
+                margin-bottom: 0.5rem;
+            }
+            
+            .metric-label {
+                font-size: 0.85rem;
+                color: var(--mm-text-muted);
+            }
+            
+            .recommendations-section {
+                margin-bottom: 2rem;
+            }
+            
+            .recommendations-section h4 {
+                color: var(--foreground);
+                margin-bottom: 1rem;
+            }
+            
+            .recommendations-list {
+                list-style: none;
+                padding: 0;
+            }
+            
+            .recommendations-list li {
+                padding: 0.5rem 0;
+                padding-left: 1.5rem;
+                position: relative;
+                color: var(--mm-text-muted);
+            }
+            
+            .recommendations-list li:before {
+                content: "▶";
+                position: absolute;
+                left: 0;
+                color: var(--mm-mint);
+            }
+            
+            .action-buttons {
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .skills-overview {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .overall-score {
+                display: inline-block;
+            }
+            
+            .score-circle {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                background: conic-gradient(var(--mm-mint) 0deg, var(--mm-mint) calc(var(--progress, 62) * 3.6deg), var(--mm-line) calc(var(--progress, 62) * 3.6deg));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1rem;
+                position: relative;
+            }
+            
+            .score-circle:before {
+                content: '';
+                position: absolute;
+                width: 70px;
+                height: 70px;
+                border-radius: 50%;
+                background: var(--mm-surface);
+            }
+            
+            .score-value {
+                position: relative;
+                z-index: 1;
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: var(--mm-mint);
+            }
+            
+            .skills-breakdown {
+                margin-bottom: 2rem;
+            }
+            
+            .skills-breakdown h4 {
+                color: var(--foreground);
+                margin-bottom: 1rem;
+            }
+            
+            .skill-item {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .skill-name {
+                min-width: 120px;
+                font-size: 0.9rem;
+                color: var(--foreground);
+            }
+            
+            .skill-bar {
+                flex: 1;
+                height: 8px;
+                background: var(--mm-line);
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            
+            .skill-fill {
+                height: 100%;
+                background: linear-gradient(90deg, var(--mm-mint), var(--mm-success));
+                border-radius: 4px;
+                transition: width 0.5s ease;
+            }
+            
+            .skill-percent {
+                min-width: 40px;
+                text-align: right;
+                font-size: 0.9rem;
+                color: var(--mm-text-muted);
+                font-weight: 500;
+            }
+            
+            .progress-summary {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .summary-card {
+                background: var(--mm-surface-dark);
+                padding: 1rem;
+                border-radius: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                border: 1px solid var(--mm-line);
+            }
+            
+            .summary-icon {
+                font-size: 1.5rem;
+            }
+            
+            .summary-value {
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: var(--mm-mint);
+            }
+            
+            .summary-label {
+                font-size: 0.85rem;
+                color: var(--mm-text-muted);
+            }
+            
+            .progress-details {
+                margin-bottom: 2rem;
+            }
+            
+            .progress-details h4 {
+                color: var(--foreground);
+                margin-bottom: 1rem;
+            }
+            
+            .journey-timeline {
+                border-left: 2px solid var(--mm-line);
+                padding-left: 1rem;
+            }
+            
+            .timeline-item {
+                position: relative;
+                margin-bottom: 1.5rem;
+                padding-left: 2rem;
+            }
+            
+            .timeline-icon {
+                position: absolute;
+                left: -2rem;
+                width: 2rem;
+                height: 2rem;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8rem;
+                font-weight: bold;
+            }
+            
+            .timeline-item.completed .timeline-icon {
+                background: var(--mm-mint);
+                color: var(--mm-bg);
+            }
+            
+            .timeline-item.pending .timeline-icon {
+                background: var(--mm-line);
+                color: var(--mm-text-muted);
+            }
+            
+            .timeline-content h5 {
+                margin: 0 0 0.5rem 0;
+                color: var(--foreground);
+                font-size: 1rem;
+            }
+            
+            .timeline-content p {
+                margin: 0;
+                color: var(--mm-text-muted);
+                font-size: 0.9rem;
+            }
+            
+            .motivation-section {
+                margin-bottom: 2rem;
+            }
+            
+            .motivation-card {
+                background: linear-gradient(135deg, rgba(37, 244, 223, 0.1), rgba(37, 244, 223, 0.05));
+                border: 1px solid var(--mm-mint);
+                border-radius: 0.75rem;
+                padding: 1.5rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+            
+            .motivation-icon {
+                font-size: 2rem;
+            }
+            
+            .motivation-text h4 {
+                margin: 0 0 0.5rem 0;
+                color: var(--mm-mint);
+            }
+            
+            .motivation-text p {
+                margin: 0;
+                color: var(--foreground);
+            }
+            
+            .getting-started {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            
+            .welcome-icon {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+            
+            .getting-started h4 {
+                color: var(--mm-mint);
+                margin-bottom: 1rem;
+            }
+            
+            .starter-metrics {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .starter-card {
+                background: var(--mm-surface-dark);
+                padding: 1rem;
+                border-radius: 0.75rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                border: 1px solid var(--mm-line);
+            }
+            
+            .starter-icon {
+                font-size: 1.5rem;
+            }
+            
+            .starter-value {
+                font-size: 1rem;
+                font-weight: bold;
+                color: var(--mm-mint);
+            }
+            
+            .starter-label {
+                font-size: 0.85rem;
+                color: var(--mm-text-muted);
+            }
+            
+            .quick-start {
+                margin-bottom: 2rem;
+            }
+            
+            .quick-start h4 {
+                color: var(--foreground);
+                margin-bottom: 1rem;
+            }
+            
+            .quick-start-list {
+                color: var(--mm-text-muted);
+                padding-left: 1.5rem;
+            }
+            
+            .quick-start-list li {
+                margin-bottom: 0.5rem;
+                line-height: 1.5;
+            }
+            
+            @media (max-width: 768px) {
+                .report-modal-content {
+                    width: 95%;
+                    max-height: 90vh;
+                }
+                
+                .metric-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                
+                .progress-summary {
+                    grid-template-columns: 1fr;
+                }
+                
+                .action-buttons {
+                    flex-direction: column;
+                }
+                
+                .skill-item {
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 0.5rem;
+                }
+                
+                .skill-name {
+                    min-width: auto;
+                }
+                
+                .strengths-growth {
+                    grid-template-columns: 1fr;
+                }
+                
+                .level-section {
+                    flex-direction: column;
+                    text-align: center;
+                }
+            }
+            
+            /* Enhanced Report Styles */
+            .report-subtitle { color: var(--mm-text-muted); font-size: 1rem; margin: 0.5rem 0; }
+            .report-id { color: var(--mm-text-muted); font-size: 0.8rem; font-family: monospace; margin-top: 0.5rem; }
+            .assessment-preview { text-align: center; margin-bottom: 2rem; }
+            .preview-icon { font-size: 3rem; margin-bottom: 1rem; }
+            .preview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+            .preview-item { background: var(--mm-surface-dark); padding: 1.5rem; border-radius: 0.75rem; text-align: center; border: 1px solid var(--mm-line); }
+            .preview-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+            .preview-item strong { color: var(--mm-mint); display: block; margin-bottom: 0.5rem; }
+            .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+            .stat-item { background: var(--mm-surface-dark); padding: 1rem; border-radius: 0.5rem; text-align: center; border: 1px solid var(--mm-line); }
+            .stat-number { font-size: 1.5rem; font-weight: bold; color: var(--mm-mint); display: block; }
+            .stat-label { font-size: 0.85rem; color: var(--mm-text-muted); }
+            .executive-summary { margin-bottom: 2rem; }
+            .summary-card { background: linear-gradient(135deg, rgba(37, 244, 223, 0.1), rgba(37, 244, 223, 0.05)); border: 1px solid var(--mm-mint); border-radius: 0.75rem; padding: 1.5rem; }
+            .metric-card.highlight { background: linear-gradient(135deg, var(--mm-mint), rgba(37, 244, 223, 0.8)); color: var(--mm-bg); border: none; }
+            .metric-card.highlight .metric-value, .metric-card.highlight .metric-label { color: var(--mm-bg); }
+            .metric-trend { font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.8; }
+            .career-matches-section { margin-bottom: 2rem; }
+            .matches-list { display: grid; gap: 1rem; }
+            .match-item { background: var(--mm-surface-dark); border: 1px solid var(--mm-line); border-radius: 0.75rem; padding: 1.5rem; transition: all 0.3s ease; }
+            .match-item.featured { border-color: var(--mm-mint); background: rgba(37, 244, 223, 0.05); }
+            .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+            .match-rank { background: var(--mm-mint); color: var(--mm-bg); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 600; }
+            .match-score { font-size: 1.2rem; font-weight: bold; color: var(--mm-mint); }
+            .match-details { display: flex; gap: 1rem; margin-bottom: 1rem; }
+            .match-tag { background: var(--mm-line); color: var(--foreground); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; }
+            .match-tag.salary { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+            .match-tag.growth { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+            .personality-section { margin-bottom: 2rem; }
+            .profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+            .profile-card { background: var(--mm-surface-dark); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--mm-line); }
+            .personality-badge { background: var(--mm-mint); color: var(--mm-bg); padding: 0.5rem 1rem; border-radius: 1rem; font-weight: 600; display: inline-block; margin-bottom: 1rem; }
+            .strengths-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+            .strength-tag { background: rgba(37, 244, 223, 0.2); color: var(--mm-mint); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.85rem; }
+            .market-analysis { margin-bottom: 2rem; }
+            .insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+            .insight-card { background: var(--mm-surface-dark); padding: 1.5rem; border-radius: 0.75rem; border: 1px solid var(--mm-line); text-align: center; }
+            .insight-icon { font-size: 2rem; margin-bottom: 0.5rem; display: block; }
+            .industry-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 0.5rem; }
+            .industry-tag { background: var(--mm-line); color: var(--foreground); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem; }
+            .action-plan { margin-bottom: 2rem; }
+            .timeline-plan { display: grid; gap: 1.5rem; }
+            .plan-phase { background: var(--mm-surface-dark); border: 1px solid var(--mm-line); border-radius: 0.75rem; padding: 1.5rem; }
+            .phase-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+            .phase-number { background: var(--mm-mint); color: var(--mm-bg); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+            .phase-actions { list-style: none; padding: 0; }
+            .phase-actions li { padding: 0.5rem 0; padding-left: 1.5rem; position: relative; color: var(--mm-text-muted); }
+            .phase-actions li:before { content: '•'; position: absolute; left: 0; color: var(--mm-mint); font-weight: bold; }
+            .skills-overview-enhanced { display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; background: var(--mm-surface-dark); padding: 2rem; border-radius: 1rem; border: 1px solid var(--mm-line); }
+            .score-circle-large { width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--mm-mint) 0deg, var(--mm-mint) calc(62 * 3.6deg), var(--mm-line) calc(62 * 3.6deg)); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+            .score-circle-large:before { content: ''; position: absolute; width: 90px; height: 90px; border-radius: 50%; background: var(--mm-surface-dark); }
+            .score-value-large { position: relative; z-index: 1; font-size: 1.5rem; font-weight: bold; color: var(--mm-mint); }
+            .score-label-large { position: relative; z-index: 1; font-size: 0.8rem; color: var(--mm-text-muted); text-align: center; }
+            .score-insights { display: flex; flex-direction: column; gap: 0.5rem; }
+            .insight-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+            .insight-item.positive { color: var(--mm-success); }
+            .skills-categories { margin-bottom: 2rem; }
+            .category-section { margin-bottom: 2rem; background: var(--mm-surface-dark); border: 1px solid var(--mm-line); border-radius: 0.75rem; padding: 1.5rem; }
+            .category-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--mm-line); }
+            .category-score { background: var(--mm-mint); color: var(--mm-bg); padding: 0.25rem 0.75rem; border-radius: 1rem; font-weight: 600; font-size: 0.9rem; }
+            .skill-item-enhanced { margin-bottom: 1.5rem; padding: 1rem; background: var(--mm-bg); border-radius: 0.5rem; border: 1px solid var(--mm-line); }
+            .skill-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+            .skill-metrics { display: flex; gap: 1rem; align-items: center; font-size: 0.85rem; }
+            .skill-current { font-weight: bold; color: var(--mm-mint); }
+            .skill-target { color: var(--mm-text-muted); }
+            .skill-trend { padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-weight: 600; }
+            .skill-trend.positive { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+            .progress-track { height: 8px; background: var(--mm-line); border-radius: 4px; position: relative; margin-bottom: 0.5rem; }
+            .progress-current { height: 100%; background: linear-gradient(90deg, var(--mm-mint), var(--mm-success)); border-radius: 4px; transition: width 0.5s ease; }
+            .progress-target { position: absolute; top: -2px; width: 2px; height: 12px; background: var(--mm-warning); transform: translateX(-50%); }
+            .strengths-growth { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+            .strength-cards, .growth-cards { display: grid; gap: 1rem; }
+            .strength-card, .growth-card { background: var(--mm-surface-dark); border: 1px solid var(--mm-line); border-radius: 0.75rem; padding: 1rem; display: flex; align-items: center; gap: 1rem; }
+            .strength-rank, .growth-priority { background: var(--mm-mint); color: var(--mm-bg); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; flex-shrink: 0; }
+            .strength-content, .growth-content { flex: 1; }
+            .strength-content h5, .growth-content h5 { margin: 0 0 0.25rem 0; color: var(--foreground); font-size: 0.9rem; }
+            .strength-content p, .growth-content p { margin: 0; font-size: 0.8rem; color: var(--mm-text-muted); }
+            .strength-badge, .growth-badge { background: var(--mm-success); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; }
+            .growth-badge { background: var(--mm-warning); }
+            .btn-outline { background: transparent; border: 1px solid var(--mm-mint); color: var(--mm-mint); }
+            .btn-outline:hover { background: var(--mm-mint); color: var(--mm-bg); }
+        `;
+        document.head.appendChild(styles);
+    }
+    
+    // Animate in
+    setTimeout(() => {
+        modal.style.opacity = '1';
+    }, 10);
+}
+
+function closeReportModal() {
+    const modal = document.getElementById('reportModal');
+    if (modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Load career explorer (comprehensive version with all major careers)
+function loadCareerExplorer() {
+    const careerResults = document.getElementById('careerResults');
+    if (!careerResults) return;
+    
+    // Comprehensive career data covering all major industries
+    const careers = [
+        // Technology Careers
+        { id: 1, title: 'Software Engineer', category: 'Technology', salary: '₹8-15 LPA', growth: 'High' },
+        { id: 2, title: 'Data Scientist', category: 'Technology', salary: '₹10-18 LPA', growth: 'Very High' },
+        { id: 3, title: 'Cybersecurity Analyst', category: 'Technology', salary: '₹9-16 LPA', growth: 'Very High' },
+        { id: 4, title: 'AI/ML Engineer', category: 'Technology', salary: '₹12-25 LPA', growth: 'Excellent' },
+        { id: 5, title: 'DevOps Engineer', category: 'Technology', salary: '₹10-20 LPA', growth: 'High' },
+        { id: 6, title: 'Full Stack Developer', category: 'Technology', salary: '₹7-14 LPA', growth: 'High' },
+        { id: 7, title: 'Cloud Architect', category: 'Technology', salary: '₹15-30 LPA', growth: 'Very High' },
+        { id: 8, title: 'Mobile App Developer', category: 'Technology', salary: '₹6-12 LPA', growth: 'High' },
+        { id: 9, title: 'Blockchain Developer', category: 'Technology', salary: '₹12-22 LPA', growth: 'Excellent' },
+        { id: 10, title: 'Database Administrator', category: 'Technology', salary: '₹8-15 LPA', growth: 'Medium' },
+        
+        // Business & Management
+        { id: 11, title: 'Product Manager', category: 'Business', salary: '₹12-25 LPA', growth: 'High' },
+        { id: 12, title: 'Business Analyst', category: 'Business', salary: '₹6-12 LPA', growth: 'High' },
+        { id: 13, title: 'Management Consultant', category: 'Business', salary: '₹10-20 LPA', growth: 'High' },
+        { id: 14, title: 'Operations Manager', category: 'Business', salary: '₹8-15 LPA', growth: 'Medium' },
+        { id: 15, title: 'Project Manager', category: 'Business', salary: '₹9-16 LPA', growth: 'High' },
+        { id: 16, title: 'Business Development Manager', category: 'Business', salary: '₹8-18 LPA', growth: 'High' },
+        { id: 17, title: 'Supply Chain Manager', category: 'Business', salary: '₹10-18 LPA', growth: 'Medium' },
+        { id: 18, title: 'Entrepreneur', category: 'Business', salary: '₹Variable', growth: 'High Risk/Reward' },
+        
+        // Creative & Design
+        { id: 19, title: 'UX Designer', category: 'Creative', salary: '₹6-12 LPA', growth: 'High' },
+        { id: 20, title: 'UI Designer', category: 'Creative', salary: '₹5-10 LPA', growth: 'High' },
+        { id: 21, title: 'Graphic Designer', category: 'Creative', salary: '₹4-8 LPA', growth: 'Medium' },
+        { id: 22, title: 'Video Editor', category: 'Creative', salary: '₹4-10 LPA', growth: 'High' },
+        { id: 23, title: 'Content Creator', category: 'Creative', salary: '₹3-12 LPA', growth: 'Very High' },
+        { id: 24, title: 'Animation Artist', category: 'Creative', salary: '₹5-12 LPA', growth: 'High' },
+        { id: 25, title: 'Creative Director', category: 'Creative', salary: '₹12-25 LPA', growth: 'Medium' },
+        { id: 26, title: 'Game Designer', category: 'Creative', salary: '₹6-15 LPA', growth: 'High' },
+        
+        // Marketing & Sales
+        { id: 27, title: 'Digital Marketer', category: 'Marketing', salary: '₹4-10 LPA', growth: 'High' },
+        { id: 28, title: 'Social Media Manager', category: 'Marketing', salary: '₹4-8 LPA', growth: 'High' },
+        { id: 29, title: 'Content Marketing Manager', category: 'Marketing', salary: '₹6-12 LPA', growth: 'High' },
+        { id: 30, title: 'SEO Specialist', category: 'Marketing', salary: '₹4-9 LPA', growth: 'High' },
+        { id: 31, title: 'Sales Manager', category: 'Marketing', salary: '₹6-15 LPA', growth: 'Medium' },
+        { id: 32, title: 'Brand Manager', category: 'Marketing', salary: '₹8-16 LPA', growth: 'Medium' },
+        { id: 33, title: 'Performance Marketing Manager', category: 'Marketing', salary: '₹7-14 LPA', growth: 'High' },
+        
+        // Healthcare
+        { id: 34, title: 'Doctor (MBBS)', category: 'Healthcare', salary: '₹8-25 LPA', growth: 'Medium' },
+        { id: 35, title: 'Nurse', category: 'Healthcare', salary: '₹3-6 LPA', growth: 'High' },
+        { id: 36, title: 'Physiotherapist', category: 'Healthcare', salary: '₹4-8 LPA', growth: 'High' },
+        { id: 37, title: 'Healthcare Data Analyst', category: 'Healthcare', salary: '₹6-12 LPA', growth: 'Very High' },
+        { id: 38, title: 'Medical Researcher', category: 'Healthcare', salary: '₹7-15 LPA', growth: 'Medium' },
+        { id: 39, title: 'Pharmacist', category: 'Healthcare', salary: '₹4-8 LPA', growth: 'Medium' },
+        { id: 40, title: 'Mental Health Counselor', category: 'Healthcare', salary: '₹4-10 LPA', growth: 'High' },
+        
+        // Finance
+        { id: 41, title: 'Financial Analyst', category: 'Finance', salary: '₹6-12 LPA', growth: 'Medium' },
+        { id: 42, title: 'Investment Banker', category: 'Finance', salary: '₹12-30 LPA', growth: 'High' },
+        { id: 43, title: 'Financial Advisor', category: 'Finance', salary: '₹5-15 LPA', growth: 'Medium' },
+        { id: 44, title: 'Risk Analyst', category: 'Finance', salary: '₹7-14 LPA', growth: 'High' },
+        { id: 45, title: 'FinTech Specialist', category: 'Finance', salary: '₹10-20 LPA', growth: 'Very High' },
+        { id: 46, title: 'Chartered Accountant', category: 'Finance', salary: '₹8-18 LPA', growth: 'Medium' },
+        { id: 47, title: 'Cryptocurrency Analyst', category: 'Finance', salary: '₹8-18 LPA', growth: 'High' },
+        
+        // Education & Training
+        { id: 48, title: 'Teacher', category: 'Education', salary: '₹3-8 LPA', growth: 'Medium' },
+        { id: 49, title: 'Corporate Trainer', category: 'Education', salary: '₹6-12 LPA', growth: 'High' },
+        { id: 50, title: 'EdTech Specialist', category: 'Education', salary: '₹7-15 LPA', growth: 'Very High' },
+        { id: 51, title: 'Instructional Designer', category: 'Education', salary: '₹5-10 LPA', growth: 'High' },
+        { id: 52, title: 'Academic Researcher', category: 'Education', salary: '₹6-12 LPA', growth: 'Medium' },
+        
+        // Engineering (Non-Software)
+        { id: 53, title: 'Mechanical Engineer', category: 'Engineering', salary: '₹5-12 LPA', growth: 'Medium' },
+        { id: 54, title: 'Civil Engineer', category: 'Engineering', salary: '₹4-10 LPA', growth: 'Medium' },
+        { id: 55, title: 'Electrical Engineer', category: 'Engineering', salary: '₹5-12 LPA', growth: 'Medium' },
+        { id: 56, title: 'Aerospace Engineer', category: 'Engineering', salary: '₹8-16 LPA', growth: 'High' },
+        { id: 57, title: 'Biomedical Engineer', category: 'Engineering', salary: '₹6-14 LPA', growth: 'High' },
+        { id: 58, title: 'Environmental Engineer', category: 'Engineering', salary: '₹5-10 LPA', growth: 'High' },
+        
+        // Media & Communication
+        { id: 59, title: 'Journalist', category: 'Media', salary: '₹3-8 LPA', growth: 'Medium' },
+        { id: 60, title: 'Public Relations Manager', category: 'Media', salary: '₹6-12 LPA', growth: 'Medium' },
+        { id: 61, title: 'Content Writer', category: 'Media', salary: '₹3-7 LPA', growth: 'High' },
+        { id: 62, title: 'Social Media Influencer', category: 'Media', salary: '₹Variable', growth: 'Very High' },
+        { id: 63, title: 'Podcaster', category: 'Media', salary: '₹Variable', growth: 'High' },
+        
+        // Science & Research
+        { id: 64, title: 'Research Scientist', category: 'Science', salary: '₹6-15 LPA', growth: 'Medium' },
+        { id: 65, title: 'Biotechnology Researcher', category: 'Science', salary: '₹7-14 LPA', growth: 'High' },
+        { id: 66, title: 'Environmental Scientist', category: 'Science', salary: '₹5-10 LPA', growth: 'High' },
+        { id: 67, title: 'Food Scientist', category: 'Science', salary: '₹4-9 LPA', growth: 'Medium' },
+        
+        // Emerging Fields
+        { id: 68, title: 'Sustainability Consultant', category: 'Emerging', salary: '₹8-16 LPA', growth: 'Very High' },
+        { id: 69, title: 'Drone Pilot', category: 'Emerging', salary: '₹4-10 LPA', growth: 'Very High' },
+        { id: 70, title: 'Virtual Reality Developer', category: 'Emerging', salary: '₹10-20 LPA', growth: 'Excellent' },
+        { id: 71, title: 'Space Technology Specialist', category: 'Emerging', salary: '₹12-25 LPA', growth: 'Excellent' },
+        { id: 72, title: 'Renewable Energy Engineer', category: 'Emerging', salary: '₹7-15 LPA', growth: 'Very High' }
+    ];
+    
+    careerResults.innerHTML = careers.map(career => `
+        <div class="career-card">
+            <h4>${career.title}</h4>
+            <p class="career-category">${career.category}</p>
+            <div class="career-details">
+                <span class="salary">💰 ${career.salary}</span>
+                <span class="growth">📈 ${career.growth} Growth</span>
+            </div>
+            <button class="btn btn-primary" onclick="exploreCareer('${career.id}')">
+                Explore Path
+            </button>
+        </div>
+    `).join('');
+}
+
+// Load learning hub with full course library (100+ courses from all sources)
+async function loadLearningHub() {
+    const learningResults = document.getElementById('learningResults');
+    if (!learningResults) return;
+    
+    try {
+        // Show loading state
+        learningResults.innerHTML = `
+            <div class="loading-learning">
+                <div class="loading-spinner"></div>
+                <p>Loading 100+ courses from Coursera, YouTube, and database...</p>
+            </div>
+        `;
+
+        // Fetch all learning resources from API (same as main learning section)
+        const response = await fetch('/api/learning/resources');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const allResources = await response.json();
+        
+        // Display courses in grid format with search functionality
+        displayLearningHubResources(allResources);
+        
+    } catch (error) {
+        console.error('Error loading learning hub:', error);
+        learningResults.innerHTML = `
+            <div class="error-message">
+                <h3>🚀 Course Library Loading</h3>
+                <p>We're initializing access to 100+ courses from Coursera, YouTube, and our database.</p>
+                <p><strong>Sources:</strong> Stanford ML, Google Certificates, freeCodeCamp, Programming with Mosh, and more!</p>
+                <button onclick="loadLearningHub()" class="btn btn-primary">Retry Loading</button>
+            </div>
+        `;
+    }
+}
+
+// Display learning hub resources with enhanced UI
+function displayLearningHubResources(resources) {
+    const learningResults = document.getElementById('learningResults');
+    
+    if (resources.length === 0) {
+        learningResults.innerHTML = `
+            <div class="no-results">
+                <h3>🔍 No courses found</h3>
+                <p>Try adjusting your search terms or <button onclick="clearLearningHubFilters()" class="btn btn-sm btn-secondary">Clear Filters</button></p>
+            </div>
+        `;
+        return;
+    }
+
+    // Show total count
+    const totalCount = allLearningHubResources.length;
+    const filteredCount = resources.length;
+    const countText = filteredCount === totalCount ? 
+        `Showing all ${totalCount} courses` : 
+        `Showing ${filteredCount} of ${totalCount} courses`;
+    
+    // Helper to convert '$' costs to INR compact for display
+    const toINRCost = (costStr) => {
+        if (!costStr || typeof costStr !== 'string') return costStr;
+        const lower = costStr.toLowerCase();
+        if (lower.includes('free')) return costStr;
+        
+        const kMatch = costStr.match(/\$\s?(\d+(?:\.\d+)?)\s?k/i);
+        if (kMatch) {
+            const usd = parseFloat(kMatch[1]) * 1000;
+            const inr = Math.round(usd * 83);
+            return `₹${(inr/1000).toFixed(0)}k` + (lower.includes('/month') ? '/month' : lower.includes('/year') ? '/year' : lower.includes('exam fee') ? ' (exam fee)' : '');
+        }
+        
+        const numMatch = costStr.match(/\$\s?([\d,]+)(?:\/(month|year))?/i);
+        if (numMatch) {
+            const usd = parseFloat(numMatch[1].replace(/,/g, ''));
+            const inr = Math.round(usd * 83);
+            const suffix = numMatch[2] ? `/${numMatch[2]}` : '';
+            return `₹${inr.toLocaleString('en-IN')}${suffix}`;
+        }
+        
+        return costStr;
+    };
+
+    learningResults.innerHTML = `
+        <div class="courses-count">
+            <p><strong>${countText}</strong></p>
+        </div>
+        <div class="learning-grid">
+            ${resources.map(resource => {
+                const displayCost = toINRCost(resource.cost);
+                const isFree = displayCost.toLowerCase().includes('free');
+                const duration = resource.duration || 'Self-paced';
+                const rating = resource.rating || 4.5;
+                const provider = resource.provider || 'Unknown';
+                
+                return `
+                    <div class="learning-card enhanced">
+                        <div class="learning-card-header">
+                            <h4 class="learning-card-title">${resource.title}</h4>
+                            <div class="learning-card-meta">
+                                <span class="provider-badge">${provider}</span>
+                                <span class="rating-badge">⭐ ${rating}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="learning-card-tags">
+                            <span class="tag category">${resource.category || 'General'}</span>
+                            <span class="tag level">${resource.difficulty_level || 'All Levels'}</span>
+                            <span class="tag duration">${duration}</span>
+                        </div>
+                        
+                        <p class="learning-card-description">${resource.description || 'Enhance your skills with this comprehensive course.'}</p>
+
+                        <div class="learning-card-footer">
+                            <span class="learning-card-cost ${isFree ? 'free' : ''}">${displayCost}</span>
+                            <div class="learning-card-actions">
+                                <button class="btn btn-secondary btn-sm start-course-btn" data-resource-id="${resource.id}" data-resource-title="${resource.title}">
+                                    🚀 Start (+25 XP)
+                                </button>
+                                <a href="${resource.url}" target="_blank" class="learning-card-btn" onclick="event.stopPropagation(); trackResourceClick('${resource.id}')">
+                                    View Course <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+// Clear learning hub filters
+function clearLearningHubFilters() {
+    document.getElementById('learningHubSearch').value = '';
+    document.getElementById('learningHubCategoryFilter').value = '';
+    document.getElementById('learningHubDifficultyFilter').value = '';
+    document.getElementById('learningHubCostFilter').value = '';
+    
+    filteredLearningHubResources = [...allLearningHubResources];
+    displayLearningHubResources(filteredLearningHubResources);
+}
+
+// Filter learning hub resources (for Progress section)
+let allLearningHubResources = [];
+let filteredLearningHubResources = [];
+
+function filterLearningHubResources() {
+    const searchTerm = document.getElementById('learningHubSearch')?.value.toLowerCase() || '';
+    const categoryFilter = document.getElementById('learningHubCategoryFilter')?.value || '';
+    const difficultyFilter = document.getElementById('learningHubDifficultyFilter')?.value || '';
+    const costFilter = document.getElementById('learningHubCostFilter')?.value || '';
+
+    filteredLearningHubResources = allLearningHubResources.filter(resource => {
+        const matchesSearch = !searchTerm || 
+            resource.title.toLowerCase().includes(searchTerm) ||
+            resource.description.toLowerCase().includes(searchTerm) ||
+            resource.provider.toLowerCase().includes(searchTerm) ||
+            resource.skill_category?.toLowerCase().includes(searchTerm);
+
+        const matchesCategory = !categoryFilter || resource.category === categoryFilter;
+        const matchesDifficulty = !difficultyFilter || resource.difficulty_level === difficultyFilter;
+        const matchesCost = !costFilter || 
+            (costFilter === 'Free' && resource.cost.toLowerCase().includes('free')) ||
+            (costFilter === 'Paid' && !resource.cost.toLowerCase().includes('free'));
+
+        return matchesSearch && matchesCategory && matchesDifficulty && matchesCost;
+    });
+
+    displayLearningHubResources(filteredLearningHubResources);
+}
+
+// Update loadLearningHub to store resources for filtering
+async function loadLearningHub() {
+    const learningResults = document.getElementById('learningResults');
+    if (!learningResults) return;
+    
+    try {
+        // Show loading state
+        learningResults.innerHTML = `
+            <div class="loading-learning">
+                <div class="loading-spinner"></div>
+                <p>Loading 100+ courses from Coursera, YouTube, and database...</p>
+            </div>
+        `;
+
+        // Fetch all learning resources from API (same as main learning section)
+        const response = await fetch('/api/learning/resources');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        allLearningHubResources = await response.json();
+        filteredLearningHubResources = [...allLearningHubResources];
+        
+        // Display courses in grid format with search functionality
+        displayLearningHubResources(filteredLearningHubResources);
+        
+    } catch (error) {
+        console.error('Error loading learning hub:', error);
+        learningResults.innerHTML = `
+            <div class="error-message">
+                <h3>🚀 Course Library Loading</h3>
+                <p>We're initializing access to 100+ courses from Coursera, YouTube, and our database.</p>
+                <p><strong>Sources:</strong> Stanford ML, Google Certificates, freeCodeCamp, Programming with Mosh, and more!</p>
+                <button onclick="loadLearningHub()" class="btn btn-primary">Retry Loading</button>
+            </div>
+        `;
+    }
+
+// Load community hub (simplified version)
+function loadCommunityHub() {
+    const communityFeed = document.getElementById('communityFeed');
+    if (!communityFeed) return;
+    
+    // Simplified community feed
+    const feedItems = [
+        { user: 'Priya S.', action: 'completed Data Science course', time: '2 hours ago' },
+        { user: 'Rahul M.', action: 'joined Software Engineering group', time: '4 hours ago' },
+        { user: 'Anita K.', action: 'shared career transition story', time: '6 hours ago' },
+        { user: 'Dev P.', action: 'achieved 30-day learning streak', time: '8 hours ago' }
+    ];
+    
+    communityFeed.innerHTML = `
+        <h4>Recent Activity</h4>
+        <div class="feed-items">
+            ${feedItems.map(item => `
+                <div class="feed-item">
+                    <div class="feed-avatar">👤</div>
+                    <div class="feed-content">
+                        <span class="feed-user">${item.user}</span>
+                        <span class="feed-action">${item.action}</span>
+                        <span class="feed-time">${item.time}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Simplified action functions for progress section
+function exploreCareer(careerId) {
+    showNotification('Career exploration feature coming soon! 🚀', 'info');
+}
+
+function startLearning(resourceId) {
+    showNotification('Learning platform integration coming soon! 📚', 'info');
+}
+
+function joinForum() {
+    showNotification('Community forum launching soon! 💬', 'info');
+}
+
+function findMentor() {
+    showNotification('Mentor matching feature coming soon! 👨‍🏫', 'info');
+}
+
+function connectPeers() {
+    showNotification('Peer networking feature coming soon! 🌐', 'info');
+}
+
+// Update learning and community overviews
+function updateLearningOverview() {
+    // This would be populated from actual user data
+    const learningOverview = document.getElementById('learningOverview');
+    if (learningOverview) {
+        // Placeholder for now
+        learningOverview.innerHTML = `
+            <div class="progress-stat">
+                <span class="stat-number">3</span>
+                <span class="stat-label">Courses Completed</span>
+            </div>
+        `;
+    }
+}
+
+function updateCommunityOverview() {
+    // This would be populated from actual user data
+    const communityOverview = document.getElementById('communityOverview');
+    if (communityOverview) {
+        // Placeholder for now
+        communityOverview.innerHTML = `
+            <div class="progress-stat">
+                <span class="stat-number">12</span>
+                <span class="stat-label">Connections Made</span>
+            </div>
+        `;
+    }
+}
+
+// Enhanced navigation to handle progress section
+function enhanceShowSectionForProgress(sectionName) {
+    if (sectionName === 'progress-section') {
+        showProgressTab('overview');
+        if (authManager && authManager.isAuthenticated()) {
+            document.querySelectorAll('.auth-required').forEach(el => {
+                el.style.display = 'block';
+            });
+        }
+    }
+}
 
 // Advanced Analytics Functions
 let currentAnalyticsTab = 'predictions';
@@ -5479,8 +7834,7 @@ function showAnalyticsTab(tabName) {
     let buttonId;
     if (tabName === 'ai-twin') {
         buttonId = 'aiTwinNavBtn';
-    } else if (tabName === 'quantum-pathfinding') {
-        buttonId = 'quantumPathfindingNavBtn';
+
     } else {
         buttonId = tabName + 'NavBtn';
     }
@@ -5506,8 +7860,7 @@ function showAnalyticsTab(tabName) {
         contentId = 'skillsAnalyticsContent';
     } else if (tabName === 'ai-twin') {
         contentId = 'ai-twinContent';
-    } else if (tabName === 'quantum-pathfinding') {
-        contentId = 'quantum-pathfindingContent';
+
     } else {
         contentId = tabName + 'Content';
     }
@@ -5542,12 +7895,7 @@ function showAnalyticsTab(tabName) {
             console.log('AI Twin case triggered!'); // Debug log
             loadAITwinSimulations();
             break;
-        case 'quantum-pathfinding':
-            console.log('Initializing Quantum Career Pathfinding...'); // Debug log
-            if (quantumPathfinding) {
-                quantumPathfinding.initialize();
-            }
-            break;
+
         case 'salary':
             // Salary explorer is always ready
             break;
@@ -6006,6 +8354,20 @@ async function getSalaryInsights(careerParam = null) {
 function displaySalaryInsights(insights) {
     const container = document.getElementById('salaryResults');
 
+    // INR compact formatter: 1,000 -> 1k, 1,50,000 -> 1.5L, 1,00,00,000 -> 1Cr
+    const formatINRCompact = (value) => {
+        if (value == null || isNaN(value)) return '₹0';
+        const abs = Math.abs(value);
+        if (abs >= 10000000) { // 1 Crore
+            return `₹${(value / 10000000).toFixed(abs >= 100000000 ? 0 : 1)}Cr`;
+        } else if (abs >= 100000) { // 1 Lakh
+            return `₹${(value / 100000).toFixed(abs >= 1000000 ? 0 : 1)}L`;
+        } else if (abs >= 1000) {
+            return `₹${(value / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`;
+        }
+        return `₹${value}`;
+    };
+
     container.innerHTML = `
         <div class="salary-insights-content">
             <div class="salary-header">
@@ -6021,15 +8383,15 @@ function displaySalaryInsights(insights) {
                 <div class="salary-range">
                     <div class="salary-stat">
                         <span class="salary-label">Minimum</span>
-                        <span class="salary-value">${insights.currency === 'INR' ? '₹' : '$'}${insights.salary.min.toLocaleString()}</span>
+                        <span class="salary-value">${(insights.currency === 'INR' || insights.isIndianLocation) ? formatINRCompact(insights.salary.min) : '$' + insights.salary.min.toLocaleString()}</span>
                     </div>
                     <div class="salary-stat highlight">
                         <span class="salary-label">Median</span>
-                        <span class="salary-value">${insights.currency === 'INR' ? '₹' : '$'}${insights.salary.median.toLocaleString()}</span>
+                        <span class="salary-value">${(insights.currency === 'INR' || insights.isIndianLocation) ? formatINRCompact(insights.salary.median) : '$' + insights.salary.median.toLocaleString()}</span>
                     </div>
                     <div class="salary-stat">
                         <span class="salary-label">Maximum</span>
-                        <span class="salary-value">${insights.currency === 'INR' ? '₹' : '$'}${insights.salary.max.toLocaleString()}</span>
+                        <span class="salary-value">${(insights.currency === 'INR' || insights.isIndianLocation) ? formatINRCompact(insights.salary.max) : '$' + insights.salary.max.toLocaleString()}</span>
                     </div>
                 </div>
                 <div class="currency-info">
@@ -6042,7 +8404,7 @@ function displaySalaryInsights(insights) {
                 <div class="roi-grid">
                     ${renderRoiStrip(insights)}
                 </div>
-                <small>Assumes learning cost of ${insights.isIndianLocation ? '₹45,000' : '$1,500'} and 6 months to employability. Adjust in settings later.</small>
+                <small>Assumes learning cost of ${insights.isIndianLocation ? '₹45k' : '$1.5k'} and 6 months to employability. Adjust in settings later.</small>
             </div>
 
             <div class="benefits-section">
@@ -7207,4 +9569,5 @@ function displayQuickPrediction(prediction) {
     `;
     
     container.scrollIntoView({ behavior: 'smooth' });
+}
 }

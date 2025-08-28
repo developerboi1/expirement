@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MindMate - AI-Powered Career Guidance</title>
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#25F4DF">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MindMate">
@@ -36,14 +37,14 @@
     <meta name="twitter:image" content="/og-image.svg">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="intelligence-revolution-styles.css">
+    <link rel="stylesheet" href="styles.css?v=2.7.0&t=1735396700">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- Preload Critical Resources -->
     <link rel="preload" href="script.js" as="script">
     <link rel="preload" href="auth.js" as="script">
+    <link rel="preload" href="unified-analytics.js" as="script">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
@@ -60,10 +61,8 @@
                         <li><a href="?section=hero" data-action="navigate" data-section="hero">Home</a></li>
                         <li><a href="?section=quiz-section" data-action="start-quiz">Assessment</a></li>
                         <li><a href="?section=chat-section" data-action="navigate" data-section="chat-section">AI Mentor</a></li>
-                        <li><a href="?section=roadmap-section" data-action="navigate" data-section="roadmap-section">Careers</a></li>
                         <li><a href="?section=learning-section" data-action="navigate" data-section="learning-section">Learning</a></li>
                         <li><a href="?section=community-section" data-action="navigate" data-section="community-section">Community</a></li>
-                        <li><a href="?section=analytics-section" data-action="navigate" data-section="analytics-section">Analytics</a></li>
                     </ul>
                     <button class="nav-toggle" data-action="toggle-mobile-menu" aria-label="Toggle menu">
                         <i class="fas fa-bars"></i>
@@ -172,6 +171,368 @@
             </div>
         </section>
 
+        <!-- Unified Progress Section -->
+        <section id="progress-section" class="progress-section">
+            <div class="container">
+                <div class="progress-container">
+                    <h2>📊 Your Progress Hub</h2>
+                    <p>Track your career journey, explore opportunities, learn new skills, and connect with peers</p>
+                    
+                    <!-- Progress Navigation -->
+                    <div class="progress-nav">
+                        <button class="progress-nav-btn active" onclick="showProgressTab('overview')" id="overviewNavBtn">
+                            🏠 Overview
+                        </button>
+                        <button class="progress-nav-btn" onclick="showProgressTab('careers')" id="careersNavBtn">
+                            🗺️ Careers
+                        </button>
+                        <button class="progress-nav-btn" onclick="showProgressTab('learning')" id="learningNavBtn">
+                            🎓 Learning
+                        </button>
+                    </div>
+                    
+                    <!-- Overview Tab - Consolidated Analytics Dashboard -->
+                    <div id="overviewContent" class="progress-tab-content active">
+                        <div class="overview-section">
+                            <h3>📊 Your Career Dashboard</h3>
+                            <p>Unified analytics consolidating insights from assessment, learning, market trends, and career growth</p>
+                        </div>
+
+                        <!-- Consolidated Analytics Cards (replaces 8 analytics tabs) -->
+                        <div class="overview-grid analytics-grid">
+                            <!-- Career Readiness Score (replaces Success Predictions tab) -->
+                            <div class="overview-card analytics-card">
+                                <div class="card-header">
+                                    <div class="card-icon">🎯</div>
+                                    <h4>Career Readiness</h4>
+                                </div>
+                                <div class="readiness-meter">
+                                    <div class="meter-circle">
+                                        <div class="meter-value" id="careerReadinessScore">0</div>
+                                        <div class="meter-label">/ 10</div>
+                                    </div>
+                                    <div class="readiness-breakdown">
+                                        <div class="breakdown-item">
+                                            <span class="item-label">Assessment</span>
+                                            <div class="item-progress"><div class="progress-fill" style="width: 0%" id="assessmentProgress"></div></div>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="item-label">Skills</span>
+                                            <div class="item-progress"><div class="progress-fill" style="width: 0%" id="skillsProgress"></div></div>
+                                        </div>
+                                        <div class="breakdown-item">
+                                            <span class="item-label">Experience</span>
+                                            <div class="item-progress"><div class="progress-fill" style="width: 0%" id="experienceProgress"></div></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Assessment Status (enhanced) -->
+                            <div class="overview-card assessment-card">
+                                <div class="card-header">
+                                    <div class="card-icon">📝</div>
+                                    <h4>Assessment Progress</h4>
+                                </div>
+                                <div class="assessment-status" id="assessmentStatus">
+                                    <div class="status-indicator not-started">
+                                        <div class="status-circle"><span class="status-text">0%</span></div>
+                                        <p>Take your career assessment for personalized insights</p>
+                                    </div>
+                                    <div class="assessment-preview">
+                                        <div class="preview-item">
+                                            <span class="preview-label">Success Probability</span>
+                                            <span class="preview-value" id="successProbability">--</span>
+                                        </div>
+                                        <div class="preview-item">
+                                            <span class="preview-label">Growth Rate</span>
+                                            <span class="preview-value" id="growthRate">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Market Trends & Salary Insights (combined) -->
+                            <div class="overview-card market-card">
+                                <div class="card-header">
+                                    <div class="card-icon">📈</div>
+                                    <h4>Market Intelligence</h4>
+                                </div>
+                                <div class="market-summary">
+                                    <div class="trends-grid">
+                                        <div class="trend-item positive">
+                                            <span class="trend-name">AI/ML</span>
+                                            <span class="trend-growth">+35%</span>
+                                        </div>
+                                        <div class="trend-item positive">
+                                            <span class="trend-name">Remote Work</span>
+                                            <span class="trend-growth">+45%</span>
+                                        </div>
+                                        <div class="trend-item positive">
+                                            <span class="trend-name">Tech Skills</span>
+                                            <span class="trend-growth">+28%</span>
+                                        </div>
+                                    </div>
+                                    <div class="salary-preview">
+                                        <div class="salary-range">
+                                            <span class="salary-label">Avg. Starting Salary</span>
+                                            <span class="salary-value" id="avgSalary">₹4.5L - ₹8L</span>
+                                        </div>
+                                        <div class="salary-trend">
+                                            <span class="trend-indicator">📈 +18% yearly growth</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Skills Gap & Learning Progress (combined) -->
+                            <div class="overview-card skills-card">
+                                <div class="card-header">
+                                    <div class="card-icon">🎯</div>
+                                    <h4>Skills & Learning</h4>
+                                </div>
+                                <div class="skills-summary">
+                                    <div class="skill-categories">
+                                        <div class="skill-category">
+                                            <span class="category-name">Technical Skills</span>
+                                            <div class="skill-bar">
+                                                <div class="skill-fill" style="width: 70%" id="technicalSkillsBar"></div>
+                                            </div>
+                                            <span class="skill-percent">70%</span>
+                                        </div>
+                                        <div class="skill-category">
+                                            <span class="category-name">Soft Skills</span>
+                                            <div class="skill-bar">
+                                                <div class="skill-fill" style="width: 65%" id="softSkillsBar"></div>
+                                            </div>
+                                            <span class="skill-percent">65%</span>
+                                        </div>
+                                    </div>
+                                    <div class="learning-stats">
+                                        <div class="learning-stat">
+                                            <span class="stat-number" id="coursesCompleted">0</span>
+                                            <span class="stat-label">Courses</span>
+                                        </div>
+                                        <div class="learning-stat">
+                                            <span class="stat-number" id="skillsLearned">0</span>
+                                            <span class="stat-label">Skills</span>
+                                        </div>
+                                        <div class="learning-stat">
+                                            <span class="stat-number" id="hoursSpent">0h</span>
+                                            <span class="stat-label">Time</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Peer Comparison & Community (combined) -->
+                            <div class="overview-card community-card">
+                                <div class="card-header">
+                                    <div class="card-icon">👥</div>
+                                    <h4>Community & Peer Ranking</h4>
+                                </div>
+                                <div class="community-summary">
+                                    <div class="peer-ranking">
+                                        <div class="ranking-item">
+                                            <span class="ranking-label">Skills Level</span>
+                                            <span class="ranking-value">Top 15%</span>
+                                        </div>
+                                        <div class="ranking-item">
+                                            <span class="ranking-label">Growth Rate</span>
+                                            <span class="ranking-value">+20% vs Peers</span>
+                                        </div>
+                                    </div>
+                                    <div class="community-stats">
+                                        <div class="community-stat">
+                                            <span class="stat-number" id="connectionsCount">0</span>
+                                            <span class="stat-label">Connections</span>
+                                        </div>
+                                        <div class="community-stat">
+                                            <span class="stat-number">1,247</span>
+                                            <span class="stat-label">Members</span>
+                                        </div>
+                                        <div class="community-stat">
+                                            <span class="stat-number">89</span>
+                                            <span class="stat-label">Mentors</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Session Analytics (simplified from complex tracking) -->
+                            <div class="overview-card session-card">
+                                <div class="card-header">
+                                    <div class="card-icon">📊</div>
+                                    <h4>Session Insights</h4>
+                                </div>
+                                <div class="session-summary">
+                                    <div class="session-stats">
+                                        <div class="session-stat">
+                                            <span class="stat-number" id="sessionTime">0m</span>
+                                            <span class="stat-label">Time Active</span>
+                                        </div>
+                                        <div class="session-stat">
+                                            <span class="stat-number" id="actionsCount">0</span>
+                                            <span class="stat-label">Actions</span>
+                                        </div>
+                                        <div class="session-stat">
+                                            <span class="stat-number" id="sectionsExplored">0</span>
+                                            <span class="stat-label">Sections</span>
+                                        </div>
+                                    </div>
+                                    <div class="engagement-level">
+                                        <span class="engagement-label">Engagement:</span>
+                                        <span class="engagement-value" id="engagementLevel">Getting Started</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions (consolidated from all analytics actions) -->
+                        <div class="quick-actions analytics-actions">
+                            <h4>⚡ Quick Actions</h4>
+                            <div class="actions-grid">
+                                <button class="action-btn assessment-btn" onclick="showSection('quiz-section')">
+                                    <span class="btn-icon">📝</span>
+                                    <div class="btn-content">
+                                        <span class="btn-text">Take Assessment</span>
+                                        <span class="btn-desc">Get career predictions</span>
+                                    </div>
+                                </button>
+                                <button class="action-btn career-btn" onclick="showProgressTab('careers')">
+                                    <span class="btn-icon">🎯</span>
+                                    <div class="btn-content">
+                                        <span class="btn-text">Explore Careers</span>
+                                        <span class="btn-desc">Discover opportunities</span>
+                                    </div>
+                                </button>
+                                <button class="action-btn learning-btn" onclick="showProgressTab('learning')">
+                                    <span class="btn-icon">📚</span>
+                                    <div class="btn-content">
+                                        <span class="btn-text">Start Learning</span>
+                                        <span class="btn-desc">Build your skills</span>
+                                    </div>
+                                </button>
+                                <button class="action-btn mentor-btn" onclick="showSection('chat-section')">
+                                    <span class="btn-icon">🤖</span>
+                                    <div class="btn-content">
+                                        <span class="btn-text">AI Mentor</span>
+                                        <span class="btn-desc">Get guidance</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Simplified Reports Section (replaces complex reports tab) -->
+                        <div class="quick-reports">
+                            <h4>📄 Quick Reports</h4>
+                            <div class="reports-grid">
+                                <button class="report-btn" onclick="generateCareerReport()">
+                                    <span class="report-icon">📊</span>
+                                    <span class="report-text">Career Summary</span>
+                                </button>
+                                <button class="report-btn" onclick="generateSkillsReport()">
+                                    <span class="report-icon">📈</span>
+                                    <span class="report-text">Skills Analysis</span>
+                                </button>
+                                <button class="report-btn" onclick="generateProgressReport()">
+                                    <span class="report-icon">🎯</span>
+                                    <span class="report-text">Progress Report</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Careers Tab -->
+                    <div id="careersContent" class="progress-tab-content">
+                        <div class="careers-explorer">
+                            <h3>🗺️ Career Explorer</h3>
+                            <p>Discover career paths tailored to your interests and skills</p>
+                            
+                            <div class="career-search">
+                                <input type="text" id="careerSearchInput" placeholder="Search careers, skills, or industries..." onkeyup="filterCareers()">
+                                <select id="careerCategoryFilter" onchange="filterCareers()">
+                                    <option value="">All Categories</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Creative">Creative</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Healthcare">Healthcare</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Science">Science</option>
+                                    <option value="Emerging">Emerging Fields</option>
+                                </select>
+                            </div>
+                            
+                            <div id="careerResults" class="career-grid">
+                                <!-- Career cards will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Learning Tab -->
+                    <div id="learningContent" class="progress-tab-content">
+                        <div class="learning-hub">
+                            <h3>🎓 Learning Hub</h3>
+                            <p>Enhance your skills with 100+ curated courses from Coursera, YouTube, and top providers</p>
+                            
+                            <div class="learning-hub-notice">
+                                <div class="notice-icon">🚀</div>
+                                <div class="notice-text">
+                                    <strong>Full Course Library Available!</strong>
+                                    <span>Search through Stanford ML, Google Certificates, freeCodeCamp, and more</span>
+                                </div>
+                            </div>
+                            
+                            <div class="learning-hub-search">
+                                <div class="search-group">
+                                    <label>🔍 Search:</label>
+                                    <input type="text" id="learningHubSearch" placeholder="Search courses, providers, or skills..." onkeyup="filterLearningHubResources()">
+                                </div>
+                                <div class="filter-group">
+                                    <label>🎯 Category:</label>
+                                    <select id="learningHubCategoryFilter" onchange="filterLearningHubResources()">
+                                        <option value="">All Categories</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="Business">Business</option>
+                                        <option value="Creative">Creative</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="Design">Design</option>
+                                        <option value="Healthcare">Healthcare</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>📈 Level:</label>
+                                    <select id="learningHubDifficultyFilter" onchange="filterLearningHubResources()">
+                                        <option value="">All Levels</option>
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>💰 Cost:</label>
+                                    <select id="learningHubCostFilter" onchange="filterLearningHubResources()">
+                                        <option value="">All Costs</option>
+                                        <option value="Free">Free</option>
+                                        <option value="Paid">Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div id="learningResults" class="learning-grid">
+                                <!-- Learning resources will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Roadmap Section -->
         <section id="roadmap-section" class="roadmap-section">
             <div class="container">
@@ -191,9 +552,17 @@
                                 <select id="categoryFilter" onchange="filterCareers()">
                                     <option value="">All Categories</option>
                                     <option value="Technology">Technology</option>
-                                    <option value="Design">Design</option>
+                                    <option value="Business">Business</option>
+                                    <option value="Creative">Creative</option>
+                                    <option value="Marketing">Marketing</option>
                                     <option value="Healthcare">Healthcare</option>
                                     <option value="Finance">Finance</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Media">Media</option>
+                                    <option value="Science">Science</option>
+                                    <option value="Emerging">Emerging Fields</option>
+                                </select>
                                     <option value="Marketing">Marketing</option>
                                     <option value="Business">Business</option>
                                     <option value="Education">Education</option>
@@ -207,9 +576,9 @@
                                 <label>💰 Salary Range:</label>
                                 <select id="salaryFilter" onchange="filterCareers()">
                                     <option value="">All Ranges</option>
-                                    <option value="entry">$30K - $60K (Entry Level)</option>
-                                    <option value="mid">$60K - $100K (Mid Level)</option>
-                                    <option value="senior">$100K+ (Senior Level)</option>
+                                    <option value="entry">₹30k - ₹60k (Entry Level)</option>
+                                    <option value="mid">₹60k - ₹100k (Mid Level)</option>
+                                    <option value="senior">₹100k+ (Senior Level)</option>
                                 </select>
                             </div>
                             <div class="filter-group">
@@ -244,6 +613,22 @@
                 <div class="learning-container">
                     <h2>🎓 Learning Resources Hub</h2>
                     <p>Discover courses, certifications, and learning paths to advance your career</p>
+                    
+                    <!-- Enhanced Course Availability Notice -->
+                    <div class="enhanced-courses-notice">
+                        <div class="notice-content">
+                            <span class="notice-icon">🚀</span>
+                            <div class="notice-text">
+                                <h3>Expanded Course Library!</h3>
+                                <p><strong>Now featuring 100+ courses from:</strong></p>
+                                <div class="provider-badges">
+                                    <span class="provider-badge">📚 Coursera (Stanford, Google, IBM)</span>
+                                    <span class="provider-badge">🎥 YouTube (freeCodeCamp, Mosh)</span>
+                                    <span class="provider-badge">💯 Many FREE options available</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Learning Resources Interface -->
                     <div class="learning-explorer">
@@ -515,410 +900,8 @@
             </div>
         </section>
 
-        <!-- Analytics Section -->
-        <section id="analytics-section" class="analytics-section">
-            <div class="container">
-                <div class="analytics-container">
-                    <h2>📊 Career Analytics Dashboard</h2>
-                    <p>Advanced insights into career success, market trends, and salary intelligence</p>
-                    
-                    <!-- Analytics Navigation -->
-                    <div class="analytics-nav">
-                        <button class="analytics-nav-btn active" onclick="showAnalyticsTab('predictions')" id="predictionsNavBtn">
-                            🔮 Success Predictions
-                        </button>
-                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('peer-comparison')" id="peerComparisonNavBtn">
-                            👥 Peer Comparison
-                        </button>
-                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('reports')" id="reportsNavBtn">
-                            📄 Career Reports
-                        </button>
-                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('trends')" id="trendsNavBtn">
-                            📈 Market Trends
-                        </button>
-                        <button class="analytics-nav-btn" onclick="console.log('AI Twin button clicked!'); showAnalyticsTab('ai-twin')" id="aiTwinNavBtn">
-                            🧠 AI Twin
-                        </button>
-                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('quantum-pathfinding')" id="quantumPathfindingNavBtn">
-                            🔮 Quantum Paths
-                        </button>
-                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('salary')" id="salaryNavBtn">
-                            💰 Salary Insights
-                        </button>
-                        <button class="analytics-nav-btn" onclick="showAnalyticsTab('skills')" id="skillsNavBtn">
-                            🎯 Skills Gap Analysis
-                        </button>
-                    </div>
-                    
-                    <!-- Career Success Predictions Tab -->
-                    <div id="predictionsContent" class="analytics-tab-content active">
-                        <div class="predictions-header">
-                            <h3>🔮 Career Success Predictions</h3>
-                            <p>AI-powered predictions based on your assessment and market data</p>
-                        </div>
-                        
-                        <div class="predictions-container" id="predictionsContainer">
-                            <div class="predictions-grid" id="predictionsGrid" style="display: block;">
-                                <div class="predictions-content">
-                                    <h4>🎯 Your Career Success Predictions</h4>
-                                    <p>Welcome back! Here are your personalized career insights.</p>
-                                    <div class="prediction-cards">
-                                        <div class="prediction-card">
-                                            <h5>Success Probability</h5>
-                                            <div class="prediction-score">95%</div>
-                                            <p>High potential for career success</p>
-                                        </div>
-                                        <div class="prediction-card">
-                                            <h5>Growth Trajectory</h5>
-                                            <div class="prediction-score">+25%</div>
-                                            <p>Expected annual growth rate</p>
-                                        </div>
-                                        <div class="prediction-card">
-                                            <h5>Market Demand</h5>
-                                            <div class="prediction-score">Very High</div>
-                                            <p>Strong market opportunities</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Peer Comparison Tab -->
-                    <div id="peer-comparisonContent" class="analytics-tab-content">
-                        <div class="peer-comparison-header">
-                            <h3>👥 Peer Comparison & Benchmarking</h3>
-                            <p>See how you compare to peers in your field and get targeted improvement recommendations</p>
-                        </div>
-                        
-                        <div class="peer-comparison-container" id="peerComparisonContainer">
-                            <div class="peer-comparison-grid" id="peerComparisonGrid" style="display: block;">
-                                <div class="comparison-content">
-                                    <h4>👥 Your Peer Comparison</h4>
-                                    <p>See how you stack up against others in your field.</p>
-                                    <div class="comparison-metrics">
-                                        <div class="metric-item">
-                                            <span class="metric-label">Skills Level</span>
-                                            <span class="metric-value">Top 15%</span>
-                                        </div>
-                                        <div class="metric-item">
-                                            <span class="metric-label">Experience</span>
-                                            <span class="metric-value">Above Average</span>
-                                        </div>
-                                        <div class="metric-item">
-                                            <span class="metric-label">Growth Rate</span>
-                                            <span class="metric-value">+20% vs Peers</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Career Reports Tab -->
-                    <div id="reportsContent" class="analytics-tab-content">
-                        <div class="reports-header">
-                            <h3>📄 Career Reports & Export</h3>
-                            <p>Generate comprehensive career reports and export them for sharing or personal records</p>
-                        </div>
-                        
-                        <div class="reports-container" id="reportsContainer">
-                            <div class="reports-grid" id="reportsGrid" style="display: block;">
-                                <div class="reports-content">
-                                    <h4>📄 Your Career Reports</h4>
-                                    <p>Generate and download your personalized career reports.</p>
-                                    <div class="report-actions">
-                                        <button class="btn btn-primary">📊 Generate Full Report</button>
-                                        <button class="btn btn-secondary">📈 Skills Analysis</button>
-                                        <button class="btn btn-outline">🎯 Career Roadmap</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Market Trends Tab -->
-                    <div id="trendsContent" class="analytics-tab-content">
-                        <div class="trends-header">
-                            <h3>📈 Market Trends & Insights</h3>
-                            <p>Stay ahead with the latest career market trends and emerging opportunities</p>
-                        </div>
-                        
-                        <div class="trends-container" id="trendsContainer">
-                            <div class="trends-content">
-                                <h4>📈 Market Trends & Insights</h4>
-                                <p>Stay ahead with real-time market analysis for your career field.</p>
-                                <div class="trend-cards">
-                                    <div class="trend-card">
-                                        <h5>AI/ML Industry</h5>
-                                        <div class="trend-indicator positive">↗️ +35%</div>
-                                        <p>Rapid growth in AI/ML roles</p>
-                                    </div>
-                                    <div class="trend-card">
-                                        <h5>Remote Work</h5>
-                                        <div class="trend-indicator positive">↗️ +45%</div>
-                                        <p>Increased remote opportunities</p>
-                                    </div>
-                                    <div class="trend-card">
-                                        <h5>Salary Growth</h5>
-                                        <div class="trend-indicator positive">↗️ +18%</div>
-                                        <p>Above-average salary increases</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Twin Tab -->
-                    <div id="ai-twinContent" class="analytics-tab-content">
-                        <div class="ai-twin-header">
-                            <h3>🧠 AI Twin - Career Simulation & Prediction</h3>
-                            <p>Your personalized AI career twin that simulates different career paths and predicts success probabilities</p>
-                        </div>
-                        
-                        <div class="ai-twin-container" id="aiTwinContainer">
-                            <div class="ai-twin-grid" id="aiTwinGrid" style="display: block;">
-                                <div class="ai-twin-content">
-                                    <h4>🧠 Your AI Twin Simulations</h4>
-                                    <p>Explore different career scenarios with your personalized AI twin.</p>
-                                    <div class="simulation-scenarios">
-                                        <div class="scenario-card">
-                                            <h5>5-Year Career Path</h5>
-                                            <p>See your potential growth trajectory</p>
-                                            <button class="btn btn-primary">🚀 Run Simulation</button>
-                                        </div>
-                                        <div class="scenario-card">
-                                            <h5>Skill Development</h5>
-                                            <p>Optimize your learning path</p>
-                                            <button class="btn btn-secondary">📚 Analyze Skills</button>
-                                        </div>
-                                        <div class="scenario-card">
-                                            <h5>Salary Projection</h5>
-                                            <p>Predict your earning potential</p>
-                                            <button class="btn btn-outline">💰 View Projections</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Quantum Career Pathfinding Section -->
-                    <div id="quantum-pathfindingContent" class="analytics-tab-content">
-                        <div class="quantum-overview">
-                            <h3>🔮 Quantum Career Pathfinding</h3>
-                            <p>Explore infinite career possibilities with quantum-inspired algorithms</p>
-                            <div class="simulation-grid">
-                                <div class="simulation-card" onclick="runAITwinSimulation('career-progression')">
-                                    <div class="simulation-icon">📈</div>
-                                    <h4>Career Progression</h4>
-                                    <p>Simulate 10-year career growth</p>
-                                </div>
-                                <div class="simulation-card" onclick="runAITwinSimulation('skill-development')">
-                                    <div class="simulation-icon">🎯</div>
-                                    <h4>Skill Development</h4>
-                                    <p>Predict skill mastery timeline</p>
-                                </div>
-                                <div class="simulation-card" onclick="runAITwinSimulation('market-adaptation')">
-                                    <div class="simulation-icon">🌍</div>
-                                    <h4>Market Adaptation</h4>
-                                    <p>Navigate industry changes</p>
-                                </div>
-                                <div class="simulation-card" onclick="runAITwinSimulation('startup-journey')">
-                                    <div class="simulation-icon">🚀</div>
-                                    <h4>Startup Journey</h4>
-                                    <p>Entrepreneurship simulation</p>
-                                </div>
-                                <div class="simulation-card" onclick="runAITwinSimulation('international-expansion')">
-                                    <div class="simulation-icon">🌐</div>
-                                    <h4>Global Expansion</h4>
-                                    <p>International career paths</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Quantum Career Pathfinding Section -->
-                        <div class="quantum-interface">
-                            <div class="quantum-canvas" id="quantumCanvas">
-                                <div class="quantum-loading">
-                                    <div class="quantum-spinner"></div>
-                                    <p>Initializing quantum career algorithms...</p>
-                                </div>
-                            </div>
-                            
-                            <div class="quantum-controls-panel">
-                                <div class="control-group">
-                                    <label>Career Dimensions:</label>
-                                    <div class="dimension-toggles">
-                                        <label><input type="checkbox" checked> Skills</label>
-                                        <label><input type="checkbox" checked> Industry</label>
-                                        <label><input type="checkbox" checked> Location</label>
-                                        <label><input type="checkbox" checked> Timeline</label>
-                                        <label><input type="checkbox" checked> Risk Level</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="control-group">
-                                    <label>Simulation Depth:</label>
-                                    <input type="range" id="simulationDepth" min="1" max="10" value="5">
-                                    <span id="depthValue">5 years</span>
-                                </div>
-                                
-                                <div class="control-group">
-                                    <label>Path Complexity:</label>
-                                    <input type="range" id="pathComplexity" min="1" max="10" value="7">
-                                    <span id="complexityValue">7/10</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="quantum-results" id="quantumResults" style="display: none;">
-                            <h4>🔍 Quantum Career Paths Discovered</h4>
-                            <div class="path-grid" id="pathGrid"></div>
-                            
-                            <div class="quantum-insights">
-                                <h5>🧠 AI Insights</h5>
-                                <div class="insight-cards" id="insightCards"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Salary Insights Tab -->
-                    <div id="salaryContent" class="analytics-tab-content">
-                        <div class="salary-header">
-                            <h3>💰 Salary Intelligence</h3>
-                            <p>Comprehensive salary data, trends, and negotiation insights</p>
-                        </div>
-                        
-                        <div class="salary-explorer">
-                            <div class="salary-filters">
-                                <div class="filter-group">
-                                    <label>🎯 Career:</label>
-                                    <input type="text" id="salaryCareerInput" placeholder="Enter career title..." list="careerOptions">
-                                    <datalist id="careerOptions">
-                                        <option value="Software Developer">
-                                        <option value="Data Scientist">
-                                        <option value="UX Designer">
-                                        <option value="Product Manager">
-                                        <option value="Marketing Manager">
-                                        <option value="Sales Representative">
-                                        <option value="Project Manager">
-                                        <option value="Cybersecurity Analyst">
-                                        <option value="AI/ML Engineer">
-                                        <option value="DevOps Engineer">
-                                        <option value="Full Stack Developer">
-                                        <option value="Mobile App Developer">
-                                        <option value="Blockchain Developer">
-                                        <option value="FinTech Specialist">
-                                        <option value="EdTech Consultant">
-                                        <option value="HealthTech Analyst">
-                                        <option value="Nurse">
-                                        <option value="Teacher">
-                                    </datalist>
-                                </div>
-                                <div class="filter-group">
-                                    <label>📍 Location:</label>
-                                    <select id="salaryLocationSelect">
-                                        <option value="India">India (Average)</option>
-                                        <option value="Mumbai">Mumbai</option>
-                                        <option value="Delhi">Delhi</option>
-                                        <option value="Bangalore">Bangalore</option>
-                                        <option value="Hyderabad">Hyderabad</option>
-                                        <option value="Chennai">Chennai</option>
-                                        <option value="Pune">Pune</option>
-                                        <option value="Kolkata">Kolkata</option>
-                                        <option value="Gurgaon">Gurgaon</option>
-                                        <option value="Noida">Noida</option>
-                                        <option value="India" selected>India (Average)</option>
-                                        <option value="UK">United Kingdom (Average)</option>
-                                        <option value="Canada">Canada (Average)</option>
-                                        <option value="Australia">Australia (Average)</option>
-                                    </select>
-                                </div>
-                                <div class="filter-group">
-                                    <label>🎯 Experience:</label>
-                                    <select id="salaryExperienceSelect">
-                                        <option value="entry">Entry Level (0-2 years)</option>
-                                        <option value="mid" selected>Mid Level (3-7 years)</option>
-                                        <option value="senior">Senior Level (8+ years)</option>
-                                    </select>
-                                </div>
-                                <button class="btn btn-primary" onclick="getSalaryInsights()">🔍 Get Insights</button>
-                            </div>
-                            
-                            <div class="salary-results" id="salaryResults">
-                                <div class="empty-state">
-                                    <div class="empty-icon">💰</div>
-                                    <h4>Get Salary Insights</h4>
-                                    <p>Enter a career title, location, and experience level to get detailed salary insights and negotiation tips.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Skills Gap Analysis Tab -->
-                    <div id="skillsAnalyticsContent" class="analytics-tab-content">
-                        <div class="skills-header">
-                            <h3>🎯 Skills Gap Analysis</h3>
-                            <p>Identify skill gaps and get personalized development recommendations</p>
-                        </div>
-                        
-                        <div class="skills-explorer">
-                            <div class="skills-input">
-                                <div class="filter-group">
-                                    <label>🎯 Target Career:</label>
-                                    <input type="text" id="skillsCareerInput" placeholder="Enter your target career..." list="careerOptions">
-                                </div>
-                                <button class="btn btn-primary" onclick="analyzeSkillsGap()">🔍 Analyze Skills Gap</button>
-                            </div>
-                            
-                            <div class="skills-results" id="skillsResults">
-                                <div class="skills-content">
-                                    <h4>🎯 Skills Gap Analysis</h4>
-                                    <p>Enter a target career to see what skills you need to develop.</p>
-                                    <div class="skills-analysis">
-                                        <div class="skill-category">
-                                            <h5>Technical Skills</h5>
-                                            <div class="skill-progress">
-                                                <span class="skill-name">Programming</span>
-                                                <div class="progress-bar">
-                                                    <div class="progress-fill" style="width: 85%"></div>
-                                                </div>
-                                                <span class="skill-level">85%</span>
-                                            </div>
-                                            <div class="skill-progress">
-                                                <span class="skill-name">Data Analysis</span>
-                                                <div class="progress-bar">
-                                                    <div class="progress-fill" style="width: 70%"></div>
-                                                </div>
-                                                <span class="skill-level">70%</span>
-                                            </div>
-                                        </div>
-                                        <div class="skill-category">
-                                            <h5>Soft Skills</h5>
-                                            <div class="skill-progress">
-                                                <span class="skill-name">Leadership</span>
-                                                <div class="progress-bar">
-                                                    <div class="progress-fill" style="width: 60%"></div>
-                                                </div>
-                                                <span class="skill-level">60%</span>
-                                            </div>
-                                            <div class="skill-progress">
-                                                <span class="skill-name">Communication</span>
-                                                <div class="progress-bar">
-                                                    <div class="progress-fill" style="width: 80%"></div>
-                                                </div>
-                                                <span class="skill-level">80%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <!-- Legacy Analytics Section - Deprecated in favor of unified Progress section -->
+        <!-- All analytics now consolidated into Progress > Overview tab -->
 
         <!-- Footer -->
         <footer class="footer" role="contentinfo">
@@ -937,27 +920,19 @@
             </button>
             <button data-action="start-quiz">
                 <i class="fas fa-clipboard-list"></i>
-                <span>Assess</span>
+                <span>Assessment</span>
             </button>
             <button data-action="navigate" data-section="chat-section">
                 <i class="fas fa-robot"></i>
-                <span>AI Chat</span>
+                <span>AI Mentor</span>
             </button>
-            <button data-action="navigate" data-section="roadmap-section">
-                <i class="fas fa-map"></i>
-                <span>Careers</span>
-            </button>
-            <button data-action="navigate" data-section="learning-section">
-                <i class="fas fa-graduation-cap"></i>
-                <span>Learning</span>
+            <button data-action="navigate" data-section="progress-section">
+                <i class="fas fa-chart-line"></i>
+                <span>Progress</span>
             </button>
             <button data-action="navigate" data-section="community-section">
                 <i class="fas fa-users"></i>
                 <span>Community</span>
-            </button>
-            <button data-action="navigate" data-section="analytics-section">
-                <i class="fas fa-chart-line"></i>
-                <span>Analytics</span>
             </button>
         </nav>
     </div>
@@ -976,11 +951,9 @@
         </div>
     </div>
 
-    <script src="auth.js"></script>
-    <script src="script.js"></script>
-    <script src="quantum-pathfinding.js"></script>
-    <script src="intelligence-revolution.js"></script>
-    <script src="intelligence-revolution-ui.js"></script>
+    <script src="auth.js?v=3.0.0&t=1735396800"></script>
+    <script src="script.js?v=2.1.0&t=1735396300"></script>
+    <script src="unified-analytics.js?v=2.0.0&t=1735395600"></script>
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",

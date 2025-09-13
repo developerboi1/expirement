@@ -927,13 +927,57 @@
                 <span>AI Mentor</span>
             </button>
             <button data-action="navigate" data-section="progress-section">
+            <div class="mobile-nav-header">
+                <a href="#" class="logo" onclick="showSection('hero')">
+                    <span class="brain-icon">🧠</span>
+                    <span>MindMate</span>
+                </a>
+            </div>
+            
+            <div class="mobile-nav-menu">
                 <i class="fas fa-chart-line"></i>
-                <span>Progress</span>
+                    <li>
+                        <a href="#" data-section="hero" onclick="showSection('hero')">
+                            <span class="mobile-nav-icon">🏠</span>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="assessment" onclick="showSection('assessment')">
+                            <span class="mobile-nav-icon">📋</span>
+                            <span>Assessment</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="chat" onclick="showSection('chat')">
+                            <span class="mobile-nav-icon">🤖</span>
+                            <span>AI Mentor</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="learning" onclick="showSection('learning')">
+                            <span class="mobile-nav-icon">📚</span>
+                            <span>Learning</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-section="community" onclick="showSection('community')">
+                            <span class="mobile-nav-icon">👥</span>
+                            <span>Community</span>
+                        </a>
+                    </li>
             </button>
-            <button data-action="navigate" data-section="community-section">
-                <i class="fas fa-users"></i>
-                <span>Community</span>
-            </button>
+            </div>
+            
+            <div class="mobile-nav-footer">
+                <div class="mobile-nav-user">
+                    <div class="user-avatar">U</div>
+                    <div>
+                        <div style="font-weight: 600;">Guest User</div>
+                        <div style="opacity: 0.7; font-size: 0.8rem;">Explore MindMate</div>
+                    </div>
+                </div>
+            </div>
         </nav>
     </div>
 
